@@ -1,9 +1,9 @@
 [package]
-name = "riscv_emulator"
+name = "riscv_emulator_cli"
 version = "0.0.1"
 authors = ["David Smallwood"]
 edition = "2021"
-description = "A RISC-V emulator"
+description = "RISC-V emulator CLI utility"
 repository = "https://github.com/dsmallerz/riscv-emulator"
 keywords = [
     "riscv",
@@ -11,14 +11,15 @@ keywords = [
     "emulation",
     "emulator",
     "simulation",
-    "simulator"
+    "simulator",
+    "cli",
+    "command-line"
 ]
 categories = [
+    "command-line-utilities",
     "emulators",
     "simulation"
 ]
 
-[workspace]
-members = [
-    "lib/cli"
-]
+[dependencies]
+riscv_emulator = { path = "../../" }

@@ -3,5 +3,12 @@
 version = 3
 
 [[package]]
-name = "riscv-emulator"
-version = "0.1.0"
+name = "riscv_emulator"
+version = "0.0.1"
+
+[[package]]
+name = "riscv_emulator_cli"
+version = "0.0.1"
+dependencies = [
+ "riscv_emulator",
+]
