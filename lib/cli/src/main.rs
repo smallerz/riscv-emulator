@@ -1,15 +1,11 @@
-use riscv_emulator::add;
+use riscv_emulator::processor::Processor;
 
 fn main() {
-    println!("Hello, world!");
+    let proc = Processor::new();
+    println!("{:?}", proc.registers_x[0]);
 }
 
 #[cfg(test)]
 mod tests {
-    use riscv_emulator::add;
 
-    #[test]
-    fn it_also_works() -> () {
-        assert_eq!(add(1, 1), 2);
-    }
 }

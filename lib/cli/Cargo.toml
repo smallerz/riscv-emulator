@@ -22,4 +22,5 @@ categories = [
 ]
 
 [dependencies]
+clap = "4.5.16"
 riscv_emulator = { path = "../../" }
