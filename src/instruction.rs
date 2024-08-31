@@ -1,0 +1,1 @@
+// Every instruction has three operands.

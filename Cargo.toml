@@ -1,0 +1,24 @@
+[package]
+name = "riscv_emulator"
+version = "0.0.1"
+authors = ["David Smallwood"]
+edition = "2021"
+description = "A RISC-V emulator"
+repository = "https://github.com/dsmallerz/riscv-emulator"
+keywords = [
+    "riscv",
+    "risc-v",
+    "emulation",
+    "emulator",
+    "simulation",
+    "simulator"
+]
+categories = [
+    "emulators",
+    "simulation"
+]
+
+[workspace]
+members = [
+    "lib/cli"
+]
