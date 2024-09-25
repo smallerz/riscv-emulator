@@ -110,21 +110,53 @@ impl Instruction {
     pub fn imm(&self) -> Option<i64> {
         match self.format() {
             B => {
-                Some(((self.instr >> 8 & 0x0f) << 1             // imm[1:4]
-                    | (self.instr >> 25 & 0x3f) << 5            // imm[5:10]
-                    | (self.instr >> 7 & 0x01) << 11            // imm[11]
-                    | (self.instr >> 31 & 0x01) << 12) as i64)  // imm[12]
+                let mut imm = (
+                    // imm[1:4]
+                    (self.instr >> 8 & 0x0f) << 1
+                    // imm[5:10]
+                    | (self.instr >> 25 & 0x3f) << 5
+                    // imm[11]
+                    | (self.instr >> 7 & 0x01) << 11
+                    // imm[12]
+                    | (self.instr >> 31 & 0x01) << 12) as i64;
+
+                // Sign-extend imm
+                imm = (imm << 52) >> 52;
+
+                Some(imm)
             },
 
-            I => Some((self.instr >> 20 & 0xfff) as i64),
+            I => {
+                let mut imm = (
+                    self.instr >> 20 & 0xfff) as i64;
 
-            J => Some((self.instr >> 12 & 0xffff) as i64),
+                // Sign-extend imm
+                imm = (imm << 52 as i64) >> 52;
+
+                Some(imm)
+            },
+
+            J => {
+                let mut imm = (
+                    self.instr >> 12 & 0xfffff) as i64;
+
+                // Sign-extend imm
+                imm = (imm << 44 as i64) >> 44;
+
+                Some(imm)
+            },
 
             S => {
-                Some(
-                    (self.instr >> 7 & 0x0f 
-                    | (self.instr >> 25 & 0x7f) << 4) as i64
-                )
+                let mut imm = (
+                    // imm[0:4]
+                    self.instr >> 7 & 0x1f
+                    // imm[5:11]
+                    | (self.instr >> 25 & 0x7f) << 5) as i64;
+
+                // Sign-extend imm
+                imm = (imm << 52 as i64) >> 52;
+                
+                Some(imm)
             },
 
             _ => None,
@@ -264,12 +296,16 @@ mod tests {
     
     #[test]
     fn i_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).imm(), Some(0xff4));
+        assert_eq!(Instruction::new(I_INSTR).imm(), Some(-12_i64));
     }
 
     #[test]
     fn i_type_instr_sign_extends_imm_field_value() {
-        let imm = Instruction::new(0xff4b3023).imm().unwrap();
+        // addi x2, x2, -32
+        let instr = 0xfe010113;
+
+        let imm = Instruction::new(instr).imm().unwrap();
+
         assert_eq!(imm.is_negative(), true);
     }
 
@@ -315,7 +351,11 @@ mod tests {
 
     #[test]
     fn j_type_instr_sign_extends_imm_field_value() {
-        let imm = Instruction::new(0xd52a006f).imm().unwrap();
+        // jal x0, -391854
+        let instr = 0xd52a006f;
+
+        let imm = Instruction::new(instr).imm().unwrap();
+
         assert_eq!(imm.is_negative(), true);
     }
 
@@ -401,7 +441,10 @@ mod tests {
 
     #[test]
     fn s_type_instr_sign_extends_imm_field_value() {
-        let imm = Instruction::new(0xffd29223).imm().unwrap();
+        // sh x29, -28(x5)
+        let instr = 0xffd29223;
+
+        let imm = Instruction::new(instr).imm().unwrap();
         assert_eq!(imm.is_negative(), true);
     }
 }
