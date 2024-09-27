@@ -44,8 +44,37 @@ impl Processor {
     /// Execute an instruction.
     pub fn execute(&mut self, instr: &Instruction) -> () {
         match instr.format() {
+            B => {
+                todo!();
+            },
+
+            I => {
+                todo!();
+            },
+
+            // jal rd, imm
+            J => {
+                // TO DO:
+                // Make sure that your implementation factors in that the return address
+                // can be the zero register.
+
+                // TO DO:
+                // I'm not sure what should happen if the program counter overflows
+                // when we increment it below. At the moment, it wraps around.
+
+                // Set the return address to the current value in the program counter
+                // plus the size of an address in bytes (in the case of RV32I, 4 bytes).
+                self.reg_x[instr.rd().unwrap() as usize] = self.pc.wrapping_add(0x04);
+
+                // TO DO:
+                // Use the imm field as an offset relative to the program counter to
+                // jump to the address in memory of the next instruction to execute.
+                todo!();
+            },
+
             R => {
                 match instr.funct3().unwrap() {
+
                     0x00 => {
                         match instr.funct7().unwrap() {
 
@@ -58,18 +87,22 @@ impl Processor {
                                     );
                             },
                             
-                            //0x20 => ALU::sub(&instr),
+                            // sub rd, rs1, rs2
+                            //0x20 => {},
+
                             _ => todo!(),
                         }
                     },
+
                     //0x01 => ALU::sll(&instr),
                     // ...
                     _ => todo!(),
                 }
             },
-            //I => { ... }
-            // ...
-            _ => todo!(),
+
+            S => {
+                todo!();
+            },
         }
     }
 
