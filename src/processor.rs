@@ -52,10 +52,33 @@ impl Processor {
     /// Execute an instruction.
     pub fn execute(&mut self, instr: &Instruction) -> () {
         match instr.format() {
+            // Branch Instructions
             B => {
-                todo!();
+                match instr.opcode() {
+                    0x63 => {
+                        match instr.funct3().unwrap() {
+                            // beq rs1, rs2, label
+                            0x00 => { todo!(); },
+                            // bne rs1, rs2, label
+                            0x01 => { todo!(); },
+                            // blt rs1, rs2, label
+                            0x04 => { todo!(); },
+                            // bge rs1, rs2, label
+                            0x05 => { todo!(); },
+                            // bltu rs1, rs2, label
+                            0x06 => { todo!(); },
+                            // bgeu rs1, rs2, label
+                            0x07 => { todo!(); },
+                            // Invalid instruction
+                            _ => todo!(),
+                        }
+                    },
+                    // Invalid instruction
+                    _ => todo!(),
+                }
             },
 
+            // Register-Immediate Instructions
             I => {
                 match instr.opcode() {
                     // Load Instructions
@@ -121,8 +144,15 @@ impl Processor {
                         }
                     },
 
-                    // jalr
-                    0x67 => { todo!(); },
+                    // Jump-and-link Immediate
+                    0x67 => {
+                        match instr.funct3().unwrap() {
+                            // jalr rd, imm(rs1)
+                            0x00 => { todo!(); },
+                            // Invalid instruction
+                            _ => todo!(),
+                        }
+                    },
 
                     // CSR*, ebreak, ecall
                     0x73 => {
@@ -159,65 +189,114 @@ impl Processor {
                 }
             },
 
-            // jal rd, imm
+            // Jump Instructions
             J => {
-                // TO DO:
-                // Make sure that your implementation factors in that the return address
-                // can be the zero register.
+                match instr.opcode() {
+                    // jal rd, imm
+                    0x6f => {
+                        // TO DO:
+                        // Make sure that your implementation factors in that the return address
+                        // can be the zero register.
 
-                // The base ISA has IALIGN=32, meaning that instructions must
-                // be aligned on a four-byte boundary in memory. An instruction-address-misaligned exception is
-                // generated on a taken branch or unconditional jump if the target address is not IALIGN-bit aligned.
-                // This exception is reported on the branch or jump instruction, not on the target instruction. No
-                // instruction-address-misaligned exception is generated for a conditional branch that is not taken.
-                if instr.imm().unwrap() % (IALIGN / 8) as i64 != 0 {
-                    todo!();
-                }
-
-                // TO DO:
-                // I'm not sure what should happen if the program counter overflows
-                // when we increment it below. At the moment, it wraps around.
-
-                // Set the return address to the current value in the program counter
-                // plus the size of an instruction in bytes (in the case of RV32I, 4 bytes).
-                self.reg_x[instr.rd().unwrap() as usize] = self.pc.wrapping_add(WORD / 8);
-
-                // TO DO:
-                // Use the imm field as an offset relative to the program counter to
-                // jump to the address in memory of the next instruction to execute.
-                todo!();
-            },
-
-            R => {
-                match instr.funct3().unwrap() {
-
-                    0x00 => {
-                        match instr.funct7().unwrap() {
-
-                            // add rd, rs1, rs2
-                            0x00 => {
-                                self.reg_x[instr.rd().unwrap() as usize] =
-                                    self.alu.add(
-                                        self.reg_x[instr.rs1().unwrap() as usize],
-                                        self.reg_x[instr.rs2().unwrap() as usize]
-                                    );
-                            },
-                            
-                            // sub rd, rs1, rs2
-                            //0x20 => {},
-
-                            _ => todo!(),
+                        // The base ISA has IALIGN=32, meaning that instructions must
+                        // be aligned on a four-byte boundary in memory. An instruction-address-misaligned exception is
+                        // generated on a taken branch or unconditional jump if the target address is not IALIGN-bit aligned.
+                        // This exception is reported on the branch or jump instruction, not on the target instruction. No
+                        // instruction-address-misaligned exception is generated for a conditional branch that is not taken.
+                        if instr.imm().unwrap() % (IALIGN / 8) as i64 != 0 {
+                            todo!();
                         }
-                    },
 
-                    //0x01 => ALU::sll(&instr),
-                    // ...
+                        // TO DO:
+                        // I'm not sure what should happen if the program counter overflows
+                        // when we increment it below. At the moment, it wraps around.
+
+                        // Set the return address to the current value in the program counter
+                        // plus the size of an instruction in bytes (in the case of RV32I, 4 bytes).
+                        self.reg_x[instr.rd().unwrap() as usize] = self.pc.wrapping_add(WORD / 8);
+
+                        // TO DO:
+                        // Use the imm field as an offset relative to the program counter to
+                        // jump to the address in memory of the next instruction to execute.
+                        todo!();
+                    }
+                    // Invalid instruction
                     _ => todo!(),
                 }
             },
 
+            // Register-Register Instructions
+            R => {
+                match instr.opcode() {
+                    0x33 => {
+                        match instr.funct3().unwrap() {
+                            // add/sub
+                            0x00 => {
+                                match instr.funct7().unwrap() {
+                                    // add rd, rs1, rs2
+                                    0x00 => {
+                                        self.reg_x[instr.rd().unwrap() as usize] =
+                                            self.alu.add(
+                                                self.reg_x[instr.rs1().unwrap() as usize],
+                                                self.reg_x[instr.rs2().unwrap() as usize]
+                                            );
+                                    },
+                                    // sub rd, rs1, rs2
+                                    0x20 => { todo!(); },
+                                    // Invalid instruction
+                                    _ => todo!(),
+                                }
+                            },
+                            // sll rd, rs1, rs2
+                            0x01 => { todo!(); },
+                            // slt rd, rs1, rs2
+                            0x02 => { todo!(); },
+                            // sltu rd, rs1, rs2
+                            0x03 => { todo!(); },
+                            // xor rd, rs1, rs2
+                            0x04 => { todo!(); },
+                            // srl/sra
+                            0x05 => {
+                                match instr.funct7().unwrap() {
+                                    // srl rd, rs1, rs2
+                                    0x00 => { todo!(); },
+                                    // sra rd, rs1, rs2
+                                    0x20 => { todo!(); },
+                                    // Invalid instruction
+                                    _ => todo!(),
+                                }
+                            },
+                            // or rd, rs1, rs2
+                            0x06 => { todo!(); },
+                            // and rd, rs1, rs2
+                            0x07 => { todo!(); },
+                            // Invalid instruction
+                            _ => todo!(),
+                        }
+                    },
+                    // Invalid instruction
+                    _ => todo!(),
+                }
+            },
+
+            // Store Instructions
             S => {
-                todo!();
+                match instr.opcode() {
+                    0x23 => {
+                        match instr.funct3().unwrap() {
+                            // sb rs1, imm(rs2)
+                            0x00 => { todo!(); },
+                            // sh rs1, imm(rs2)
+                            0x01 => { todo!(); },
+                            // sw rs1, imm(rs2)
+                            0x02 => { todo!(); },
+                            // Invalid instruction
+                            _ => todo!(),
+                        }
+                    }
+                    // Invalid instruction
+                    _ => todo!(),
+                }
             },
         }
     }
