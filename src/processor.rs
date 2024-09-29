@@ -70,11 +70,11 @@ impl Processor {
                             // bgeu rs1, rs2, label
                             0x07 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
                     // Invalid instruction
-                    _ => todo!(),
+                    _ => self.handle_invalid_instr(instr),
                 }
             },
 
@@ -95,7 +95,7 @@ impl Processor {
                             // lhu rd, rs1, imm
                             0x05 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
 
@@ -107,7 +107,7 @@ impl Processor {
                             // fence.i
                             0x01 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
 
@@ -132,7 +132,7 @@ impl Processor {
                                     // srai rd, rs1, imm
                                     0x20 => { todo!(); },
                                     // Invalid instruction
-                                    _ => todo!(),
+                                    _ => self.handle_invalid_instr(instr),
                                 }
                             },
                             // ori rd, rs1, imm
@@ -140,7 +140,7 @@ impl Processor {
                             // andi rd, rs1, imm
                             0x07 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
 
@@ -150,7 +150,7 @@ impl Processor {
                             // jalr rd, imm(rs1)
                             0x00 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
 
@@ -180,12 +180,12 @@ impl Processor {
                             // CSRRCI
                             0x07 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
 
                     // Invalid instruction
-                    _ => todo!(),
+                    _ => self.handle_invalid_instr(instr),
                 }
             },
 
@@ -221,7 +221,7 @@ impl Processor {
                         todo!();
                     }
                     // Invalid instruction
-                    _ => todo!(),
+                    _ => self.handle_invalid_instr(instr),
                 }
             },
 
@@ -244,7 +244,7 @@ impl Processor {
                                     // sub rd, rs1, rs2
                                     0x20 => { todo!(); },
                                     // Invalid instruction
-                                    _ => todo!(),
+                                    _ => self.handle_invalid_instr(instr),
                                 }
                             },
                             // sll rd, rs1, rs2
@@ -263,7 +263,7 @@ impl Processor {
                                     // sra rd, rs1, rs2
                                     0x20 => { todo!(); },
                                     // Invalid instruction
-                                    _ => todo!(),
+                                    _ => self.handle_invalid_instr(instr),
                                 }
                             },
                             // or rd, rs1, rs2
@@ -271,11 +271,11 @@ impl Processor {
                             // and rd, rs1, rs2
                             0x07 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     },
                     // Invalid instruction
-                    _ => todo!(),
+                    _ => self.handle_invalid_instr(instr),
                 }
             },
 
@@ -291,11 +291,11 @@ impl Processor {
                             // sw rs1, imm(rs2)
                             0x02 => { todo!(); },
                             // Invalid instruction
-                            _ => todo!(),
+                            _ => self.handle_invalid_instr(instr),
                         }
                     }
                     // Invalid instruction
-                    _ => todo!(),
+                    _ => self.handle_invalid_instr(instr),
                 }
             },
         }
@@ -304,6 +304,12 @@ impl Processor {
     /// Fetches and returns the next instruction to 
     /// execute from memory.
     pub fn fetch(&self) -> Instruction {
+        todo!();
+    }
+
+    /// Handles instructions that are identified as either
+    /// invalid or unsupported in some way during decoding.
+    fn handle_invalid_instr(&self, instr: &Instruction) {
         todo!();
     }
 }
