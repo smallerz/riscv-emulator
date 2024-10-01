@@ -115,7 +115,13 @@ impl Processor {
                     0x13 => {
                         match instr.funct3().unwrap() {
                             // addi rd, rs1, imm
-                            0x00 => { todo!(); },
+                            0x00 => {
+                                self.reg_x[instr.rd().unwrap() as usize] =
+                                    self.alu.add(
+                                        self.reg_x[instr.rs1().unwrap() as usize] as i32,
+                                        instr.imm().unwrap() as i32
+                                    ) as u32;
+                            },
                             // slli rd, rs1, imm
                             0x01 => { todo!(); },
                             // slti rd, rs1, imm
@@ -148,7 +154,11 @@ impl Processor {
                     0x67 => {
                         match instr.funct3().unwrap() {
                             // jalr rd, imm(rs1)
-                            0x00 => { todo!(); },
+                            0x00 => {
+                                // 1. imm + rs1
+                                // 2. Set 
+                                todo!();
+                            },
                             // Invalid instruction
                             _ => self.handle_invalid_instr(instr),
                         }
@@ -237,9 +247,9 @@ impl Processor {
                                     0x00 => {
                                         self.reg_x[instr.rd().unwrap() as usize] =
                                             self.alu.add(
-                                                self.reg_x[instr.rs1().unwrap() as usize],
-                                                self.reg_x[instr.rs2().unwrap() as usize]
-                                            );
+                                                (self.reg_x[instr.rs1().unwrap() as usize]) as i32,
+                                                (self.reg_x[instr.rs2().unwrap() as usize]) as i32
+                                            ) as u32;
                                     },
                                     // sub rd, rs1, rs2
                                     0x20 => { todo!(); },
