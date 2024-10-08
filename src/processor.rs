@@ -49,7 +49,7 @@ impl Processor {
         }
     }
 
-    /// Execute an instruction.
+    /// Executes an instruction.
     pub fn execute(&mut self, instr: &Instruction) -> () {
         match instr.format() {
             // Branch Instructions
@@ -69,7 +69,7 @@ impl Processor {
         }
     }
 
-    /// Execute a B-type instruction.
+    /// Executes a B-type instruction.
     #[inline]
     fn execute_instr_b(&self, instr: &Instruction) {
         match instr.opcode() {
@@ -87,16 +87,16 @@ impl Processor {
                     0x06 => { todo!(); },
                     // bgeu rs1, rs2, label
                     0x07 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
-            // Invalid instruction
-            _ => self.handle_invalid_instr(instr),
+            // Illegal instruction
+            _ => self.handle_illegal_instr(instr),
         }
     }
 
-    /// Execute an I-type instruction.
+    /// Executes an I-type instruction.
     #[inline]
     fn execute_instr_i(&mut self, instr: &Instruction) {
         match instr.opcode() {
@@ -113,8 +113,8 @@ impl Processor {
                     0x04 => { todo!(); },
                     // lhu rd, rs1, imm
                     0x05 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
 
@@ -125,8 +125,8 @@ impl Processor {
                     0x00 => { todo!(); },
                     // fence.i
                     0x01 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
 
@@ -156,16 +156,16 @@ impl Processor {
                             0x00 => { todo!(); },
                             // srai rd, rs1, imm
                             0x20 => { todo!(); },
-                            // Invalid instruction
-                            _ => self.handle_invalid_instr(instr),
+                            // Illegal instruction
+                            _ => self.handle_illegal_instr(instr),
                         }
                     },
                     // ori rd, rs1, imm
                     0x06 => { todo!(); },
                     // andi rd, rs1, imm
                     0x07 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
 
@@ -178,8 +178,8 @@ impl Processor {
                         // 2. Set 
                         todo!();
                     },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
 
@@ -208,17 +208,17 @@ impl Processor {
                     0x06 => { todo!(); },
                     // CSRRCI
                     0x07 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
 
-            // Invalid instruction
-            _ => self.handle_invalid_instr(instr),
+            // Illegal instruction
+            _ => self.handle_illegal_instr(instr),
         }
     }
 
-    /// Execute a J-type instruction.
+    /// Executes a J-type instruction.
     #[inline]
     fn execute_instr_j(&mut self, instr: &Instruction) {
         match instr.opcode() {
@@ -250,12 +250,12 @@ impl Processor {
                 // jump to the address in memory of the next instruction to execute.
                 todo!();
             }
-            // Invalid instruction
-            _ => self.handle_invalid_instr(instr),
+            // Illegal instruction
+            _ => self.handle_illegal_instr(instr),
         }
     }
 
-    /// Execute an R-type instruction.
+    /// Executes an R-type instruction.
     #[inline]
     fn execute_instr_r(&mut self, instr: &Instruction) {
         match instr.opcode() {
@@ -274,8 +274,8 @@ impl Processor {
                             },
                             // sub rd, rs1, rs2
                             0x20 => { todo!(); },
-                            // Invalid instruction
-                            _ => self.handle_invalid_instr(instr),
+                            // Illegal instruction
+                            _ => self.handle_illegal_instr(instr),
                         }
                     },
                     // sll rd, rs1, rs2
@@ -293,24 +293,24 @@ impl Processor {
                             0x00 => { todo!(); },
                             // sra rd, rs1, rs2
                             0x20 => { todo!(); },
-                            // Invalid instruction
-                            _ => self.handle_invalid_instr(instr),
+                            // Illegal instruction
+                            _ => self.handle_illegal_instr(instr),
                         }
                     },
                     // or rd, rs1, rs2
                     0x06 => { todo!(); },
                     // and rd, rs1, rs2
                     0x07 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             },
-            // Invalid instruction
-            _ => self.handle_invalid_instr(instr),
+            // Illegal instruction
+            _ => self.handle_illegal_instr(instr),
         }
     }
 
-    /// Execute an S-type instruction.
+    /// Executes an S-type instruction.
     #[inline]
     fn execute_instr_s(&self, instr: &Instruction) {
         match instr.opcode() {
@@ -322,12 +322,12 @@ impl Processor {
                     0x01 => { todo!(); },
                     // sw rs1, imm(rs2)
                     0x02 => { todo!(); },
-                    // Invalid instruction
-                    _ => self.handle_invalid_instr(instr),
+                    // Illegal instruction
+                    _ => self.handle_illegal_instr(instr),
                 }
             }
-            // Invalid instruction
-            _ => self.handle_invalid_instr(instr),
+            // Illegal instruction
+            _ => self.handle_illegal_instr(instr),
         }
     }
 
@@ -337,9 +337,10 @@ impl Processor {
         todo!();
     }
 
-    /// Handles instructions that are identified as either
-    /// invalid or unsupported in some way during decoding.
-    fn handle_invalid_instr(&self, instr: &Instruction) {
+    /// Handles an illegal instruction by raising an
+    /// illegal instruction exception.
+    #[cold]
+    fn handle_illegal_instr(&self, instr: &Instruction) {
         todo!();
     }
 }
