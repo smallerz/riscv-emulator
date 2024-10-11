@@ -66,6 +66,9 @@ impl Processor {
 
             // Store Instructions
             S => self.execute_instr_s(instr),
+
+            // Upper-Immediate Instructions
+            //U => self.execute_instr_u(instr),
         }
     }
 
@@ -192,8 +195,9 @@ impl Processor {
                         // Two arms to add here:
                         // 1. ebreak
                         // 2. ecall
-                        // The arms are based on some of the bits in the imm field,
-                        // but I'm not sure how that value is determined yet.
+                        // The arms are based on some of the bits in the imm 
+                        // field, but I'm not sure how that value is determined 
+                        // yet.
                         todo!();
                     },
                     // CSRRW
@@ -225,29 +229,35 @@ impl Processor {
             // jal rd, imm
             0x6f => {
                 // TO DO:
-                // Make sure that your implementation factors in that the return address
-                // can be the zero register.
+                // Make sure that your implementation factors in that the 
+                // return address can be the zero register.
 
                 // The base ISA has IALIGN=32, meaning that instructions must
-                // be aligned on a four-byte boundary in memory. An instruction-address-misaligned exception is
-                // generated on a taken branch or unconditional jump if the target address is not IALIGN-bit aligned.
-                // This exception is reported on the branch or jump instruction, not on the target instruction. No
-                // instruction-address-misaligned exception is generated for a conditional branch that is not taken.
+                // be aligned on a four-byte boundary in memory. An 
+                // instruction-address-misaligned exception is
+                // generated on a taken branch or unconditional jump if the 
+                // target address is not IALIGN-bit aligned.
+                // This exception is reported on the branch or jump
+                // instruction, not on the target instruction. No
+                // instruction-address-misaligned exception is generated for a 
+                // conditional branch that is not taken.
                 if instr.imm().unwrap() % (IALIGN / 8) as i64 != 0 {
                     todo!();
                 }
 
                 // TO DO:
-                // I'm not sure what should happen if the program counter overflows
-                // when we increment it below. At the moment, it wraps around.
+                // I'm not sure what should happen if the program counter
+                // overflows when we increment it below. At the moment, it 
+                // wraps around.
 
-                // Set the return address to the current value in the program counter
-                // plus the size of an instruction in bytes (in the case of RV32I, 4 bytes).
+                // Set the return address to the current value in the program 
+                // counter plus the size of an instruction in bytes (in the 
+                // case of RV32I, 4 bytes).
                 self.reg_x[instr.rd().unwrap() as usize] = self.pc.wrapping_add(WORD / 8);
 
                 // TO DO:
-                // Use the imm field as an offset relative to the program counter to
-                // jump to the address in memory of the next instruction to execute.
+                // Use the imm field as an offset relative to the program
+                // counter to jump to the address in memory of the next instruction to execute.
                 todo!();
             }
             // Illegal instruction
@@ -331,14 +341,24 @@ impl Processor {
         }
     }
 
-    /// Fetches and returns the next instruction to 
-    /// execute from memory.
+    /// Executes a U-type instruction.
+    #[inline]
+    fn execute_instr_u(&self, instr: &Instruction) {
+        match instr.opcode() {
+            // lui rd, imm
+            0x37 => { todo!(); },
+            // Illegal instruction
+            _ => self.handle_illegal_instr(instr),
+        }
+    }
+
+    /// Fetches and returns the next instruction to execute from memory.
     pub fn fetch(&self) -> Instruction {
         todo!();
     }
 
-    /// Handles an illegal instruction by raising an
-    /// illegal instruction exception.
+    /// Handles an illegal instruction by raising an illegal instruction
+    /// exception.
     #[cold]
     fn handle_illegal_instr(&self, instr: &Instruction) {
         todo!();
