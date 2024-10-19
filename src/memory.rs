@@ -1,11 +1,16 @@
+/// Emulated byte-addressable memory.
 #[derive(Debug)]
 pub struct Memory {
     data: Vec<u8>,
 }
 
 impl Memory {
-    /// Creates a new instance of memory.
+    /// Creates a new instance of memory of a given size in bytes.
     pub fn new(size: usize) -> Self {
+        if size == 0 {
+            panic!("Memory size cannot be zero.");
+        }
+
         Self {
             data: vec![0x00; size],
         }
@@ -17,8 +22,11 @@ impl Memory {
         let mut result = Vec::with_capacity(len);
 
         for i in 0 .. len {
-            let index = self.wrap_addr(base_addr + i);
-            result.push(self.data[index]);
+            result.push(
+                self.data[
+                    self.wrap_addr(base_addr + i)
+                ]
+            );
         }
 
         result
@@ -38,7 +46,7 @@ impl Memory {
         self.data.len()
     }
 
-    /// Wraps an address if it exceeds the address space.
+    /// Wraps an address value if it exceeds the address space.
     fn wrap_addr(&self, addr: usize) -> usize {
         addr % self.data.len()
     }
@@ -53,6 +61,12 @@ mod tests {
         const SIZE: usize = 256;
         let mem = Memory::new(SIZE);
         assert_eq!(mem.len(), SIZE);
+    }
+
+    #[test]
+    #[should_panic]
+    fn memory_size_cannot_be_zero() {
+        Memory::new(0);
     }
 
     #[test]
