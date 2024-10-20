@@ -1,4 +1,5 @@
 /// A group of registers of a generic size.
+#[derive(Debug)]
 pub struct Registers<T> {
     values: [T; 32],    
 }

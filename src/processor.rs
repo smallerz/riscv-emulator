@@ -13,6 +13,7 @@ use crate::instruction::{
     Instruction,
     InstructionFormat::*,
 };
+use crate::register::Registers;
 
 const IALIGN: u32 = 32;
 const XLEN: u32 = 32;
@@ -36,7 +37,7 @@ pub struct Processor {
     /// Integer registers that are part of the base ISA,
     /// comprised of a zero register and 31 general-purpose
     /// registers.
-    pub reg_x: [u32; 32],
+    pub reg_x: Registers<u32>,
 }
 
 impl Processor {
@@ -45,7 +46,7 @@ impl Processor {
         Self {
             alu: ALU {},
             pc: 0x00,
-            reg_x: [0x00; XLEN as usize],
+            reg_x: Registers::<u32>::new(),
         }
     }
 
@@ -138,11 +139,16 @@ impl Processor {
                 match instr.funct3().unwrap() {
                     // addi rd, rs1, imm
                     0x00 => {
-                        self.reg_x[instr.rd().unwrap() as usize] =
-                            self.alu.add(
-                                self.reg_x[instr.rs1().unwrap() as usize] as i32,
-                                instr.imm().unwrap() as i32
-                            ) as u32;
+                        let result = self.alu.add(
+                            self.reg_x.read(
+                                instr.rs1().unwrap() as usize) as i32,
+                            instr.imm().unwrap() as i32
+                        );
+
+                        self.reg_x.write(
+                            instr.rd().unwrap() as usize,
+                            result as u32
+                        );
                     },
                     // slli rd, rs1, imm
                     0x01 => { todo!(); },
@@ -253,7 +259,10 @@ impl Processor {
                 // Set the return address to the current value in the program 
                 // counter plus the size of an instruction in bytes (in the 
                 // case of RV32I, 4 bytes).
-                self.reg_x[instr.rd().unwrap() as usize] = self.pc.wrapping_add(WORD / 8);
+                self.reg_x.write(
+                    instr.rd().unwrap() as usize,
+                    self.pc.wrapping_add(WORD / 8)
+                );
 
                 // TO DO:
                 // Use the imm field as an offset relative to the program
@@ -276,11 +285,19 @@ impl Processor {
                         match instr.funct7().unwrap() {
                             // add rd, rs1, rs2
                             0x00 => {
-                                self.reg_x[instr.rd().unwrap() as usize] =
-                                    self.alu.add(
-                                        (self.reg_x[instr.rs1().unwrap() as usize]) as i32,
-                                        (self.reg_x[instr.rs2().unwrap() as usize]) as i32
-                                    ) as u32;
+                                let result = self.alu.add(
+                                    self.reg_x.read(
+                                        instr.rs1().unwrap() as usize)
+                                        as i32,
+                                    self.reg_x.read(
+                                        instr.rs2().unwrap() as usize)
+                                        as i32,
+                                );
+        
+                                self.reg_x.write(
+                                    instr.rd().unwrap() as usize,
+                                    result as u32
+                                );
                             },
                             // sub rd, rs1, rs2
                             0x20 => { todo!(); },
