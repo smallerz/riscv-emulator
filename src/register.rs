@@ -1,60 +1,62 @@
-/// A generic implementation of a register.
-/// The aim is to use this for both the general-purpose registers
-/// and the floating-point registers.
-#[derive(Clone, Copy, Debug)]
-pub struct Register<T: Clone + Copy> {
-    value: T
+/// A group of registers of a generic size.
+pub struct Registers<T> {
+    values: [T; 32],    
 }
 
-impl<T: Clone + Copy> Register<T> {
-    /// Read the current value from the register.
-    pub fn read(&self) -> T {
-        self.value
-    }
-
-    /// Write a value to the register.
-    pub fn write(&mut self, value: T) -> () {
-        self.value = value;
-    }
-}
-
-impl Register<u32> {
-    pub fn new(initial_value: u32) -> Self {
+impl Registers<u32> {
+    /// Create a new group of 32-bit registers.
+    pub fn new() -> Registers<u32> {
         Self {
-            value: initial_value
+            values: [0x00_u32; 32],
         }
     }
 }
 
-impl Default for Register<u32> {
-    fn default() -> Self {
-        Self {
-            value: 0x00_u32
-        }
-    }
-}
+// impl Registers<u64> {
+//     pub fn new() -> Registers<u64> {
+//         Self {
+//             values: [0x00_u64; 32],
+//         }
+//     }
+// }
 
-impl Default for Register<f32> {
-    fn default() -> Self {
-        Self {
-            value: 0.0_f32
+impl<T: Copy> Registers<T> {
+    /// Reads a value from a register.
+    pub fn read(&self, index: usize) -> T {
+        self.values[index]
+    }
+
+    /// Writes a value to a register.
+    pub fn write(&mut self, index: usize, value: T) {
+        if index != 0 {
+            self.values[index] = value;
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Register;
+    use super::Registers;
 
     #[test]
-    fn u32_register_value_defaults_to_zero() {
-        let reg: Register<u32> = Register::default();
-        assert_eq!(reg.read(), 0x00_u32);
+    fn zero_register_is_zero() {
+        assert_eq!(
+            Registers::<u32>::new().read(0),
+            0x00
+        )
     }
 
     #[test]
-    fn f32_register_value_defaults_to_zero() {
-        let reg: Register<f32> = Register::default();
-        assert_eq!(reg.read(), 0.0_f32);
+    fn ignores_write_attempts_to_zero_register() {
+        let mut regs = Registers::<u32>::new();
+        regs.write(0, 0xff);
+        assert_eq!(regs.read(0), 0x00);
+    }
+
+    #[test]
+    fn writes_to_nonzero_register() {
+        let mut regs = Registers::<u32>::new();
+        regs.write(9, 0xff);
+        assert_eq!(regs.read(9), 0xff);
     }
 }
