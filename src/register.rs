@@ -1,14 +1,17 @@
+/// The number of registers.
+const REGISTER_COUNT: usize = 32;
+
 /// A group of registers of a generic size.
 #[derive(Debug)]
 pub struct Registers<T> {
-    values: [T; 32],    
+    values: [T; REGISTER_COUNT],    
 }
 
 impl Registers<u32> {
     /// Create a new group of 32-bit registers.
     pub fn new() -> Registers<u32> {
         Self {
-            values: [0x00_u32; 32],
+            values: [0x00_u32; REGISTER_COUNT],
         }
     }
 }
@@ -37,7 +40,19 @@ impl<T: Copy> Registers<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::Registers;
+    use super::{Registers, REGISTER_COUNT};
+
+    #[test]
+    #[should_panic]
+    fn panics_if_attempting_to_read_from_nonexistent_register() {
+        Registers::<u32>::new().read(REGISTER_COUNT);
+    }
+
+    #[test]
+    #[should_panic]
+    fn panics_if_attempting_to_write_to_nonexistent_register() {
+        Registers::<u32>::new().write(REGISTER_COUNT, 0x00);
+    }
 
     #[test]
     fn zero_register_is_zero() {
