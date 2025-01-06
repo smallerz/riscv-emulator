@@ -13,7 +13,7 @@ use crate::instruction::{
     Instruction,
     InstructionFormat::*,
 };
-use crate::register::Registers;
+use crate::register::RegistersX;
 
 const IALIGN: u32 = 32;
 const XLEN: u32 = 32;
@@ -37,7 +37,7 @@ pub struct Processor {
     /// Integer registers that are part of the base ISA,
     /// comprised of a zero register and 31 general-purpose
     /// registers.
-    pub reg_x: Registers<u32>,
+    pub reg_x: RegistersX,
 }
 
 impl Processor {
@@ -46,7 +46,7 @@ impl Processor {
         Self {
             alu: ALU {},
             pc: 0x00,
-            reg_x: Registers::<u32>::new(),
+            reg_x: RegistersX::new(&[0]),
         }
     }
 
