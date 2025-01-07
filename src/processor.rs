@@ -13,7 +13,7 @@ use crate::instruction::{
     Instruction,
     InstructionFormat::*,
 };
-use crate::register::RegistersX;
+use crate::register::{AccessLevel, RegistersX};
 
 const IALIGN: u32 = 32;
 const XLEN: u32 = 32;
@@ -43,10 +43,18 @@ pub struct Processor {
 impl Processor {
     /// Creates a new processor.
     pub fn new() -> Self {
+        let mut reg_x = RegistersX::new();
+
+        // All general-purpose registers besides the zero register will 
+        // be read/write.
+        for i in 1 .. reg_x.len() - 1 {
+            reg_x.set_access_level(i, AccessLevel::ReadWrite);
+        }
+
         Self {
             alu: ALU {},
             pc: 0x00,
-            reg_x: RegistersX::new(&[0]),
+            reg_x,
         }
     }
 
