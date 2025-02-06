@@ -205,14 +205,14 @@ impl Processor {
                 match instr.funct3().unwrap() {
                     // ebreak/ecall
                     0x00 => {
-                        // TODO:
-                        // Two arms to add here:
-                        // 1. ebreak
-                        // 2. ecall
-                        // The arms are based on some of the bits in the imm 
-                        // field, but I'm not sure how that value is determined 
-                        // yet.
-                        todo!();
+                        match instr.imm().unwrap() {
+                            // ecall rd, funct3, rs1, imm
+                            0x00 => todo!(),
+                            // ebreak rd, funct3, rs1, imm
+                            0x01 => todo!(),
+                            // Illegal instruction
+                            _ => self.handle_illegal_instr(instr),
+                        }
                     },
                     // CSRRW
                     0x01 => { todo!(); },
