@@ -1,11 +1,16 @@
-use riscv_emulator::processor::Processor;
+use riscv_emulator::emulator::{
+    Emulator,
+    EmulatorConfig,
+};
 
 fn main() {
-    let proc = Processor::new();
-    println!("{:?}", proc.registers_x[0]);
-}
+    let config = EmulatorConfig { 
+        mem_size: 1024,
+        proc_count: 1,
+    };
 
-#[cfg(test)]
-mod tests {
+    let emu = Emulator::build(config);
 
+    println!("Memory (B):\t{}", emu.memory.len());
+    println!("Processors:\t{}", emu.proc.len());
 }
