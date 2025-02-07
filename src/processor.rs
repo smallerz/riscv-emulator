@@ -255,7 +255,7 @@ impl Processor {
                 // instruction, not on the target instruction. No
                 // instruction-address-misaligned exception is generated for a 
                 // conditional branch that is not taken.
-                if instr.imm().unwrap() % (IALIGN / 8) as i64 != 0 {
+                if instr.imm().unwrap() % (IALIGN / 8) as i32 != 0 {
                     todo!();
                 }
 

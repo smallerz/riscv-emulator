@@ -4,34 +4,28 @@ use InstructionFormat::*;
 /// are encoded and the fields that they contain.
 #[derive(Debug, Eq, PartialEq)]
 pub enum InstructionFormat {
-    /// B-type format (Branch)
-    /// 
-    /// opcode, imm[11|1:4], funct3, rs1, rs2, imm[5:10|12]
+    /// ## B-type instruction format (Branch)
+    /// `opcode`, `imm[11|1:4]`, `funct3`, `rs1`, `rs2`, `imm[5:10|12]`
     B,
     
-    /// I-type format (Immediate)
-    /// 
-    /// opcode, rd, funct3, rs1, imm
+    /// ## I-type instruction format (Immediate)
+    /// `opcode`, `rd`, `funct3`, `rs1`, `imm`
     I,
     
-    /// J-type format (Jump)
-    /// 
-    /// opcode, rd, imm[12:19|11|1:10|20]
+    /// ## J-type instruction format (Jump)
+    /// `opcode`, `rd`, `imm[12:19|11|1:10|20]`
     J,
 
-    /// R-type format (Register)
-    /// 
-    /// opcode, rd, funct3, rs1, rs2, funct7
+    /// ## R-type instruction format (Register)
+    /// `opcode`, `rd`, `funct3`, `rs1`, `rs2`, `funct7`
     R,
     
-    /// S-type format (Store)
-    /// 
-    /// opcode, imm[0:4], funct3, rs1, rs2, imm[5:11]
+    /// ## S-type instruction format (Store)
+    /// `opcode`, `imm[0:4]`, `funct3`, `rs1`, `rs2`, `imm[5:11]`
     S,
 
-    /// U-type format (Upper-Immediate)
-    /// 
-    /// opcode, rd, imm[20]
+    /// ## U-type instruction format (Upper-Immediate)
+    /// `opcode`, `rd`, `imm[20]`
     U,
 }
 
@@ -113,67 +107,70 @@ impl Instruction {
 
     /// Returns the value of the instruction's imm field,
     /// or None if the instruction doesn't have an imm field.
-    pub fn imm(&self) -> Option<i64> {
+    pub fn imm(&self) -> Option<i32> {
         match self.format() {
-            B => {
-                let mut imm = (
-                    // imm[1:4]
-                    (self.instr >> 8 & 0x0f) << 1
-                    // imm[5:10]
-                    | (self.instr >> 25 & 0x3f) << 5
-                    // imm[11]
-                    | (self.instr >> 7 & 0x01) << 11
-                    // imm[12]
-                    | (self.instr >> 31 & 0x01) << 12) as i64;
-
-                // Sign-extend imm
-                imm = (imm << 52) >> 52;
-
-                Some(imm)
-            },
-
-            I => {
-                let mut imm = (
-                    self.instr >> 20 & 0xfff) as i64;
-
-                // Sign-extend imm
-                imm = (imm << 52 as i64) >> 52;
-
-                Some(imm)
-            },
-
-            J => {
-                let mut imm = (
-                    self.instr >> 12 & 0xfffff) as i64;
-
-                // Sign-extend imm
-                imm = (imm << 44 as i64) >> 44;
-
-                Some(imm)
-            },
-
-            S => {
-                let mut imm = (
-                    // imm[0:4]
-                    self.instr >> 7 & 0x1f
-                    // imm[5:11]
-                    | (self.instr >> 25 & 0x7f) << 5) as i64;
-
-                // Sign-extend imm
-                imm = (imm << 52 as i64) >> 52;
-                
-                Some(imm)
-            },
-
-            U => {
-                let imm = (
-                    self.instr >> 12 & 0xfffff) as i64;
-                
-                Some(imm)
-            },
-
+            B => Some(self.imm_b()),
+            I => Some(self.imm_i()),
+            J => Some(self.imm_j()),
+            S => Some(self.imm_s()),
+            U => Some(self.imm_u()),
             _ => None,
         }
+    }
+
+    #[inline]
+    fn imm_b(&self) -> i32 {
+        Instruction::sign_ext(
+            // imm[1:4]
+            (self.instr >> 8 & 0x0f) << 1
+                // imm[5:10]
+                | (self.instr >> 25 & 0x3f) << 5
+                // imm[11]
+                | (self.instr >> 7 & 0x01) << 11
+                // imm[12]
+                | (self.instr >> 31 & 0x01) << 12,
+            12
+        )
+    }
+
+    #[inline]
+    fn imm_i(&self) -> i32 {
+        Instruction::sign_ext(
+            self.instr >> 20 & 0xfff,
+            12
+        )
+    }
+
+    #[inline]
+    fn imm_j(&self) -> i32 {
+        Instruction::sign_ext(
+            self.instr >> 12 & 0xfffff,
+            20
+        )
+    }
+
+    #[inline]
+    fn imm_s(&self) -> i32 {
+        Instruction::sign_ext(
+            // imm[0:4]
+            (self.instr >> 7 & 0x1f)
+                // imm[5:11]
+                | (self.instr >> 25 & 0x7f) << 5,
+            12
+        )
+    }
+
+    #[inline]
+    fn imm_u(&self) -> i32 {
+        Instruction::sign_ext(
+            self.instr >> 12 & 0xfffff,
+            20
+        )
+    }
+
+    /// Sign-extend an instruction field.
+    fn sign_ext(value: u32, field_size: usize) -> i32 {
+        ((value << (32 - field_size)) as i32) >> (32 - field_size)
     }
 }
 
@@ -315,7 +312,7 @@ mod tests {
     
     #[test]
     fn i_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).imm(), Some(-12_i64));
+        assert_eq!(Instruction::new(I_INSTR).imm(), Some(-12));
     }
 
     #[test]
@@ -504,12 +501,12 @@ mod tests {
     
     #[test]
     fn u_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).imm(), Some(0xfffff));
+        assert_eq!(Instruction::new(U_INSTR).imm(), Some(-1));
     }
 
     #[test]
-    fn u_type_instr_zero_extends_imm_field_value() {
+    fn u_type_instr_sign_extends_imm_field_value() {
         let imm = Instruction::new(U_INSTR).imm().unwrap();
-        assert_eq!(imm.is_negative(), false);
+        assert_eq!(imm.is_negative(), true);
     }
 }
