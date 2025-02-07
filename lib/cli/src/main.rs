@@ -9,8 +9,10 @@ fn main() {
         proc_count: 1,
     };
 
-    let emu = Emulator::build(config);
+    let mut emu = Emulator::build(config);
 
     println!("Memory (B):\t{}", emu.memory.len());
     println!("Processors:\t{}", emu.proc.len());
+
+    emu.debug();
 }

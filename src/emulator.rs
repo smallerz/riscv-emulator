@@ -1,3 +1,4 @@
+use crate::instruction::Instruction;
 use crate::memory::Memory;
 use crate::processor::Processor;
 
@@ -24,5 +25,27 @@ impl Emulator {
                 .map(|_i| Processor::new())
                 .collect(),
         }
+    }
+
+    // Just for testing purposes. Will delete later.
+    pub fn debug(&mut self) {
+        let prog: Vec<u32> = vec![
+            // x10 = x0 + 45
+            0x02d00513, 
+            // x10 = x10 + 10
+            0x00a50513,
+            // x10 = x10 + -5
+            0xffb50513
+        ];
+
+        prog.iter()
+            .for_each(|i| {
+                self.proc[0].execute(&Instruction::new(*i))
+            });
+
+        (0 .. self.proc[0].reg_x.len())
+            .for_each(|i| {
+                println!("x{i}\t{}", self.proc[0].reg_x.read(i));
+            });
     }
 }
