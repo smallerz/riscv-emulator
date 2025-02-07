@@ -28,6 +28,11 @@ pub enum InstructionFormat {
     /// 
     /// opcode, imm[0:4], funct3, rs1, rs2, imm[5:11]
     S,
+
+    /// U-type format (Upper-Immediate)
+    /// 
+    /// opcode, rd, imm[20]
+    U,
 }
 
 /// A 32-bit RISC-V instruction.
@@ -49,6 +54,7 @@ impl Instruction {
             0x03 | 0x0f | 0x13 | 0x17 | 0x67 | 0x73 => I,
             0x23 => S,
             0x33 => R,
+            0x37 => U,
             0x63 => B,
             0x6f => J,
             _ => todo!(),
@@ -64,7 +70,7 @@ impl Instruction {
     /// or None if the instruction doesn't have an rd field.
     pub fn rd(&self) -> Option<u8> {
         match self.format() {
-            I | J | R => Some((self.instr >> 7 & 0x1f) as u8),
+            I | J | R | U => Some((self.instr >> 7 & 0x1f) as u8),
             _ => None,
         }
     }
@@ -159,6 +165,13 @@ impl Instruction {
                 Some(imm)
             },
 
+            U => {
+                let imm = (
+                    self.instr >> 12 & 0xfffff) as i64;
+                
+                Some(imm)
+            },
+
             _ => None,
         }
     }
@@ -212,6 +225,12 @@ mod tests {
     // rs2:     0x06,
     // imm:     0x04,
     const S_INSTR: u32 = 0x00662223;
+
+    // lui x10, 0xfffff
+    // opcode:  0x37,
+    // rd:      0x0a,
+    // imm:     0xfffff
+    const U_INSTR: u32 = 0xfffff537;
 
     #[test]
     fn b_type_instr_has_correct_format() {
@@ -446,5 +465,51 @@ mod tests {
 
         let imm = Instruction::new(instr).imm().unwrap();
         assert_eq!(imm.is_negative(), true);
+    }
+
+    #[test]
+    fn u_type_instr_has_correct_format() {
+        assert_eq!(Instruction::new(U_INSTR).format(), U);
+    }
+
+    #[test]
+    fn u_type_instr_has_correct_opcode_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).opcode(), 0x37);
+    }
+
+    #[test]
+    fn u_type_instr_has_correct_rd_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).rd(), Some(0x0a));
+    }
+
+    #[test]
+    fn u_type_instr_has_no_funct3_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).funct3(), None);
+    }
+
+    #[test]
+    fn u_type_instr_has_no_rs1_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).rs1(), None);
+    }
+
+    #[test]
+    fn u_type_instr_has_no_rs2_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).rs2(), None);
+    }
+
+    #[test]
+    fn u_type_instr_has_no_funct7_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).funct7(), None);
+    }
+    
+    #[test]
+    fn u_type_instr_has_correct_imm_field_value() {
+        assert_eq!(Instruction::new(U_INSTR).imm(), Some(0xfffff));
+    }
+
+    #[test]
+    fn u_type_instr_zero_extends_imm_field_value() {
+        let imm = Instruction::new(U_INSTR).imm().unwrap();
+        assert_eq!(imm.is_negative(), false);
     }
 }
