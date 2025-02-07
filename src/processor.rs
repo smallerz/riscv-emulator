@@ -77,7 +77,7 @@ impl Processor {
             S => self.execute_instr_s(instr),
 
             // Upper-Immediate Instructions
-            //U => self.execute_instr_u(instr),
+            U => self.execute_instr_u(instr),
         }
     }
 
