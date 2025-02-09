@@ -28,24 +28,30 @@ impl Emulator {
     }
 
     // Just for testing purposes. Will delete later.
-    pub fn debug(&mut self) {
-        let prog: Vec<u32> = vec![
-            // x10 = x0 + 45
-            0x02d00513, 
-            // x10 = x10 + 10
-            0x00a50513,
-            // x10 = x10 + -5
-            0xffb50513
-        ];
-
-        prog.iter()
-            .for_each(|i| {
-                self.proc[0].execute(&Instruction::new(*i))
+    pub fn dev_start(&mut self, obj_data: &[u8]) {
+        obj_data
+            .chunks_exact(4)
+            .for_each(|word: &[u8]| {
+                self.proc[0].execute(&Instruction::new(
+                    u32::from_le_bytes(
+                        [word[0], word[1], word[2], word[3]]
+                    )
+                ));
             });
 
-        (0 .. self.proc[0].reg_x.len())
+        (0 .. self.proc[0].reg_x.len() / 4)
             .for_each(|i| {
-                println!("x{i}\t{}", self.proc[0].reg_x.read(i));
+                println!(
+                    "x{}:\t{:x}\tx{}:\t{:x}\tx{}:\t{:x}\tx{}:\t{:x}",
+                    i,
+                    self.proc[0].reg_x.read(i),
+                    i + 8,
+                    self.proc[0].reg_x.read(i + 8),
+                    i + 16,
+                    self.proc[0].reg_x.read(i + 16),
+                    i + 24,
+                    self.proc[0].reg_x.read(i + 24)
+                );
             });
     }
 }
