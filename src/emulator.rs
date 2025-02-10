@@ -32,11 +32,15 @@ impl Emulator {
         obj_data
             .chunks_exact(4)
             .for_each(|word: &[u8]| {
-                self.proc[0].execute(&Instruction::new(
+                let instr = Instruction::new(
                     u32::from_le_bytes(
                         [word[0], word[1], word[2], word[3]]
                     )
-                ));
+                );
+
+                println!("{instr}");
+
+                self.proc[0].execute(&instr);
             });
 
         (0 .. self.proc[0].reg_x.len() / 4)

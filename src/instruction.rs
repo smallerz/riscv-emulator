@@ -1,3 +1,7 @@
+use std::fmt::Display;
+
+use crate::decode::Decoder;
+
 use InstructionFormat::*;
 
 /// RISC-V's instruction formats, which indicate how instructions
@@ -51,8 +55,14 @@ impl Instruction {
             0x37 => U,
             0x63 => B,
             0x6f => J,
-            _ => todo!(),
+            _ => todo!(
+                "Invalid instruction format handler not yet implemented"),
         }
+    }
+
+    /// Returns the mnemonic associated with the instruction.
+    pub fn mnemonic(&self) -> String {
+        Decoder::decode(self).unwrap().to_string()
     }
 
     /// Returns the instruction's opcode field.
@@ -62,9 +72,9 @@ impl Instruction {
 
     /// Returns the value of the instruction's rd field,
     /// or None if the instruction doesn't have an rd field.
-    pub fn rd(&self) -> Option<u8> {
+    pub fn rd(&self) -> Option<usize> {
         match self.format() {
-            I | J | R | U => Some((self.instr >> 7 & 0x1f) as u8),
+            I | J | R | U => Some((self.instr >> 7 & 0x1f) as usize),
             _ => None,
         }
     }
@@ -89,18 +99,18 @@ impl Instruction {
 
     /// Returns the value of the instruction's rs1 field,
     /// or None if the instruction doesn't have an rs1 field.
-    pub fn rs1(&self) -> Option<u8> {
+    pub fn rs1(&self) -> Option<usize> {
         match self.format() {
-            B | I | R | S => Some((self.instr >> 15 & 0x1f) as u8),
+            B | I | R | S => Some((self.instr >> 15 & 0x1f) as usize),
             _ => None,
         }
     }
 
     /// Returns the value of the instruction's rs2 field,
     /// or None if the instruction doesn't have an rs2 field.
-    pub fn rs2(&self) -> Option<u8> {
+    pub fn rs2(&self) -> Option<usize> {
         match self.format() {
-            B | R | S => Some((self.instr >> 20 & 0x1f) as u8),
+            B | R | S => Some((self.instr >> 20 & 0x1f) as usize),
             _ => None,
         }
     }
@@ -171,6 +181,57 @@ impl Instruction {
     /// Sign-extend an instruction field.
     fn sign_ext(value: u32, field_size: usize) -> i32 {
         ((value << (32 - field_size)) as i32) >> (32 - field_size)
+    }
+}
+
+impl Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self.format() {
+                B => format!(
+                    "{}\tx{}, x{}, {:#x}",
+                    self.mnemonic(),
+                    self.rs1().unwrap(),
+                    self.rs2().unwrap(),
+                    self.imm().unwrap(),
+                ),
+                I => format!(
+                    "{}\tx{}, x{}, {:#x}",
+                    self.mnemonic(),
+                    self.rd().unwrap(),
+                    self.rs1().unwrap(),
+                    self.imm().unwrap(),
+                ),
+                J => format!(
+                    "{}\tx{}, {:#x}",
+                    self.mnemonic(),
+                    self.rd().unwrap(),
+                    self.imm().unwrap(),
+                ),
+                R => format!(
+                    "{}\tx{}, x{}, x{}",
+                    self.mnemonic(),
+                    self.rd().unwrap(),
+                    self.rs1().unwrap(),
+                    self.rs2().unwrap(),
+                ),
+                S => format!(
+                    "{}\tx{}, {:#x}({})",
+                    self.mnemonic(),
+                    self.rd().unwrap(),
+                    self.imm().unwrap(),
+                    self.rs1().unwrap(),
+                ),
+                U => format!(
+                    "{}\tx{}, {:#x}",
+                    self.mnemonic(),
+                    self.rd().unwrap(),
+                    self.imm().unwrap(),
+                ),
+            },
+        )
     }
 }
 
