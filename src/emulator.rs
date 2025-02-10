@@ -38,15 +38,17 @@ impl Emulator {
                     )
                 );
 
-                println!("{instr}");
+                println!("Instructions:\n\n{instr}\n");
 
                 self.proc[0].execute(&instr);
             });
 
+        println!("Registers:\n");
+
         (0 .. self.proc[0].reg_x.len() / 4)
             .for_each(|i| {
                 println!(
-                    "x{}:\t{:x}\tx{}:\t{:x}\tx{}:\t{:x}\tx{}:\t{:x}",
+                    "x{:<2} ( 0x{:08x} ) x{:<2} ( 0x{:08x} ) x{:<2} ( 0x{:08x} ) x{:<2} ( 0x{:08x} )",
                     i,
                     self.proc[0].reg_x.read(i),
                     i + 8,
