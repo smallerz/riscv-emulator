@@ -69,22 +69,22 @@ impl Processor {
 
     /// Executes an `add` instruction.
     fn exec_add(&mut self, instr: &Instruction) {
-        let result = self.reg_x.read(instr.rs1().unwrap() as usize)
-            .wrapping_add_signed(self.reg_x.read(instr.rs2().unwrap() as usize) as i32);
+        let result = self.reg_x.read(instr.rs1().unwrap())
+            .wrapping_add_signed(self.reg_x.read(instr.rs2().unwrap()) as i32);
 
         self.reg_x.write(
-            instr.rd().unwrap() as usize,
+            instr.rd().unwrap(),
             result,
         )
     }
 
     /// Executes an `addi` instruction.
     fn exec_addi(&mut self, instr: &Instruction) {
-        let result = self.reg_x.read(instr.rs1().unwrap() as usize)
+        let result = self.reg_x.read(instr.rs1().unwrap())
             .wrapping_add_signed(instr.imm().unwrap());
 
         self.reg_x.write(
-            instr.rd().unwrap() as usize,
+            instr.rd().unwrap(),
             result,
         )
     }
