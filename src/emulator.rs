@@ -29,6 +29,8 @@ impl Emulator {
 
     // Just for testing purposes. Will delete later.
     pub fn dev_start(&mut self, obj_data: &[u8]) {
+        println!("Instructions:\n");
+
         obj_data
             .chunks_exact(4)
             .for_each(|word: &[u8]| {
@@ -38,25 +40,21 @@ impl Emulator {
                     )
                 );
 
-                println!("Instructions:\n\n{instr}\n");
+                println!("{instr}");
 
                 self.proc[0].execute(&instr);
             });
 
-        println!("Registers:\n");
+        println!("\nRegisters:\n");
 
-        (0 .. self.proc[0].reg_x.len() / 4)
+        (0 .. self.proc[0].reg_x.len() / 2)
             .for_each(|i| {
                 println!(
-                    "x{:<2} ( 0x{:08x} ) x{:<2} ( 0x{:08x} ) x{:<2} ( 0x{:08x} ) x{:<2} ( 0x{:08x} )",
+                    "x{:<2}  ( 0x{:08x} )    x{:<2}  ( 0x{:08x} )",
                     i,
                     self.proc[0].reg_x.read(i),
-                    i + 8,
-                    self.proc[0].reg_x.read(i + 8),
                     i + 16,
                     self.proc[0].reg_x.read(i + 16),
-                    i + 24,
-                    self.proc[0].reg_x.read(i + 24)
                 );
             });
     }
