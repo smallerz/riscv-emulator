@@ -60,10 +60,11 @@ impl Processor {
     /// Executes an instruction.
     pub fn execute(&mut self, instr: &Instruction) {
         match Decoder::decode(instr) {
-            Some(ArithmeticAdd) => self.exec_add(instr),
-            Some(ArithmeticAddImmediate) => self.exec_addi(instr),
-            Some(LoadUpperImmediate) => todo!(),
-            _ => self.handle_illegal_instr(instr),
+            Some(ArithmeticAdd)             => self.exec_add(instr),
+            Some(ArithmeticAddImmediate)    => self.exec_addi(instr),
+            Some(ArithmeticSub)             => self.exec_sub(instr),
+            Some(LoadUpperImmediate)        => todo!(),
+            _                               => self.handle_illegal_instr(instr),
         }
     }
 
@@ -75,7 +76,7 @@ impl Processor {
         self.reg_x.write(
             instr.rd().unwrap(),
             result,
-        )
+        );
     }
 
     /// Executes an `addi` instruction.
@@ -86,7 +87,19 @@ impl Processor {
         self.reg_x.write(
             instr.rd().unwrap(),
             result,
-        )
+        );
+    }
+
+    fn exec_sub(&mut self, instr: &Instruction) {
+        let result = self.reg_x.read(instr.rs1().unwrap())
+            .wrapping_sub(
+                self.reg_x.read(instr.rs2().unwrap())
+            );
+
+        self.reg_x.write(
+            instr.rd().unwrap(),
+            result,
+        );
     }
 
     /// Fetches and returns the next instruction to execute from memory.
