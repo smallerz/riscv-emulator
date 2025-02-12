@@ -60,11 +60,17 @@ impl Processor {
     /// Executes an instruction.
     pub fn execute(&mut self, instr: &Instruction) {
         match Decoder::decode(instr) {
-            Some(ArithmeticAdd)             => self.exec_add(instr),
-            Some(ArithmeticAddImmediate)    => self.exec_addi(instr),
-            Some(ArithmeticSub)             => self.exec_sub(instr),
-            Some(LoadUpperImmediate)        => todo!(),
-            _                               => self.handle_illegal_instr(instr),
+            Some(ArithmeticAdd)                 => self.exec_add(instr),
+            Some(ArithmeticAddImmediate)        => self.exec_addi(instr),
+            Some(ArithmeticSub)                 => self.exec_sub(instr),
+            Some(LoadUpperImmediate)            => todo!(),
+            Some(LogicalAnd)                    => todo!(),
+            Some(LogicalAndImmediate)           => todo!(),
+            Some(LogicalExclusiveOr)            => todo!(),
+            Some(LogicalExclusiveOrImmediate)   => todo!(),
+            Some(LogicalOr)                     => todo!(),
+            Some(LogicalOrImmediate)            => todo!(),
+            _                                   => self.handle_illegal_instr(instr),
         }
     }
 
