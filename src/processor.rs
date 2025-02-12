@@ -64,8 +64,8 @@ impl Processor {
             Some(ArithmeticAddImmediate)        => self.exec_addi(instr),
             Some(ArithmeticSub)                 => self.exec_sub(instr),
             Some(LoadUpperImmediate)            => todo!(),
-            Some(LogicalAnd)                    => todo!(),
-            Some(LogicalAndImmediate)           => todo!(),
+            Some(LogicalAnd)                    => self.exec_and(instr),
+            Some(LogicalAndImmediate)           => self.exec_andi(instr),
             Some(LogicalExclusiveOr)            => todo!(),
             Some(LogicalExclusiveOrImmediate)   => todo!(),
             Some(LogicalOr)                     => todo!(),
@@ -89,6 +89,26 @@ impl Processor {
     fn exec_addi(&mut self, instr: &Instruction) {
         let result = self.reg_x.read(instr.rs1().unwrap())
             .wrapping_add_signed(instr.imm().unwrap());
+
+        self.reg_x.write(
+            instr.rd().unwrap(),
+            result,
+        );
+    }
+
+    fn exec_and(&mut self, instr: &Instruction) {
+        let result = self.reg_x.read(instr.rs1().unwrap())
+            & self.reg_x.read(instr.rs2().unwrap());
+
+        self.reg_x.write(
+            instr.rd().unwrap(), 
+            result,
+        );
+    }
+
+    fn exec_andi(&mut self, instr: &Instruction) {
+        let result = self.reg_x.read(instr.rs1().unwrap())
+            & instr.imm().unwrap() as u32;
 
         self.reg_x.write(
             instr.rd().unwrap(),
