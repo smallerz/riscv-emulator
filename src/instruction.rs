@@ -218,9 +218,9 @@ impl Display for Instruction {
                     self.rs2().unwrap(),
                 ),
                 S => format!(
-                    "{:<12} x{}, {:#010x}({})",
+                    "{:<12} x{}, {:#010x}(x{})",
                     self.mnemonic(),
-                    self.rd().unwrap(),
+                    self.rs2().unwrap(),
                     self.imm().unwrap(),
                     self.rs1().unwrap(),
                 ),
