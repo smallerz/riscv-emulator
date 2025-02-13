@@ -8,10 +8,10 @@
 // Most fields on instructions return an Option, so I'd like to be
 // able to use error propagation (e.g. instr.funct3()?...).
 
-use crate::alu::ALU;
+use crate::alu::Alu;
 use crate::decode::Decoder;
 use crate::instruction::Instruction;
-use crate::op::Op::*;
+use crate::op::{ Op, Op::* };
 use crate::register::{AccessLevel, RegistersX};
 
 const IALIGN: u32 = 32;
@@ -26,7 +26,7 @@ const WORD: u32 = 32;
 pub struct Processor {
     /// Arithmetic Logic Unit (ALU)
     /// Responsible for performing arithmetic operations.
-    pub alu: ALU,
+    pub alu: Alu,
 
     /// Program Counter (PC)
     /// Contains the address of the instruction being executed.
@@ -51,7 +51,7 @@ impl Processor {
         }
 
         Self {
-            alu: ALU {},
+            alu: Alu::new(),
             pc: 0x00,
             reg_x,
         }
@@ -72,6 +72,28 @@ impl Processor {
             Some(LogicalOrImmediate)            => self.exec_ori(instr),
             _                                   => self.handle_illegal_instr(instr),
         }
+    }
+
+    fn exec_alu_op_r(&mut self, op: &Op, instr: &Instruction) {
+        self.reg_x.write(
+            instr.rd().unwrap(),
+            self.alu.run(
+                op, 
+                self.reg_x.read(instr.rs1().unwrap()) as i32,
+                self.reg_x.read(instr.rs2().unwrap()) as i32,
+            ) as u32
+        );
+    }
+
+    fn exec_alu_op_i(&mut self, op: &Op, instr: &Instruction) {
+        self.reg_x.write(
+            instr.rd().unwrap(),
+            self.alu.run(
+                op, 
+                self.reg_x.read(instr.rs1().unwrap()) as i32,
+                instr.imm().unwrap(),
+            ) as u32
+        );
     }
 
     /// Executes an `add` instruction.
