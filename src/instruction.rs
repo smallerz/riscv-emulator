@@ -242,332 +242,353 @@ mod tests {
         InstructionFormat::*,
     };
 
-    // Example instructions are provided below for the purposes of 
-    // testing. There is one instruction per instruction format.
+    mod b_type {
+        use super::*;
 
-    // bne x9, x11, 20
-    // opcode:  0x63,
-    // funct3:  0x01,
-    // rs1:     0x09,
-    // rs2:     0x0b,
-    // imm:     0x14,
-    const B_INSTR: u32 = 0x00b49a63;
+        // bne      x9, x11, 20
+        // opcode:  0x63,
+        // funct3:  0x01,
+        // rs1:     0x09,
+        // rs2:     0x0b,
+        // imm:     0x14,
+        const B_INSTR: u32 = 0x00b49a63;
 
-    // addi x10, x11 -12
-    // opcode:  0x13,
-    // rd:      0x0a,
-    // funct3:  0x00,
-    // rs1:     0x0b,
-    // imm:     0xff4,
-    const I_INSTR: u32 = 0xff458513;
-
-    // jal x0, 64
-    // opcode:  0x6f,
-    // rd:      0x00,
-    // imm:     0x4000,
-    const J_INSTR: u32 = 0x0400006f;
-
-    // sub x5, x7, x3
-    // opcode:  0x33, 
-    // rd:      0x05, 
-    // funct3:  0x00, 
-    // rs1:     0x07, 
-    // rs2:     0x03, 
-    // funct7:  0x20,
-    const R_INSTR: u32 = 0x403382b3;
-
-    // sw x6, 4(x12)
-    // opcode:  0x23,
-    // funct3:  0x02,
-    // rs1:     0x0c,
-    // rs2:     0x06,
-    // imm:     0x04,
-    const S_INSTR: u32 = 0x00662223;
-
-    // lui x10, 0xfffff
-    // opcode:  0x37,
-    // rd:      0x0a,
-    // imm:     0xfffff
-    const U_INSTR: u32 = 0xfffff537;
-
-    #[test]
-    fn b_type_instr_has_correct_format() {
-        assert_eq!(Instruction::new(B_INSTR).format(), B);
-    }
-
-    #[test]
-    fn b_type_instr_has_correct_opcode_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).opcode(), 0x63);
-    }
-
-    #[test]
-    fn b_type_instr_has_no_rd_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).rd(), None);
-    }
-
-    #[test]
-    fn b_type_instr_has_correct_funct3_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).funct3(), Some(0x01));
-    }
-
-    #[test]
-    fn b_type_instr_has_correct_rs1_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).rs1(), Some(0x09));
-    }
-
-    #[test]
-    fn b_type_instr_has_correct_rs2_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).rs2(), Some(0x0b));
-    }
-
-    #[test]
-    fn b_type_instr_has_no_funct3_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).funct7(), None);
-    }
+        #[test]
+        fn has_b_format() {
+            assert_eq!(Instruction::new(B_INSTR).format(), B);
+        }
     
-    #[test]
-    fn b_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(B_INSTR).imm(), Some(0x14));
-    }
-
-    #[test]
-    fn b_type_instr_sign_extends_imm_field_value() {
-        let imm = Instruction::new(0xfe529ae3).imm().unwrap();
-        assert_eq!(imm.is_negative(), true);
-    }
-
-    #[test]
-    fn i_type_instr_has_correct_format() {
-        assert_eq!(Instruction::new(I_INSTR).format(), I);
-    }
-
-    #[test]
-    fn i_type_instr_has_correct_opcode_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).opcode(), 0x13);
-    }
-
-    #[test]
-    fn i_type_instr_has_correct_rd_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).rd(), Some(0x0a));
-    }
-
-    #[test]
-    fn i_type_instr_has_correct_funct3_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).funct3(), Some(0x00));
-    }
-
-    #[test]
-    fn i_type_instr_has_correct_rs1_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).rs1(), Some(0x0b));
-    }
-
-    #[test]
-    fn i_type_instr_has_no_rs2_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).rs2(), None);
-    }
-
-    #[test]
-    fn i_type_instr_has_no_opcode_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).funct7(), None);
-    }
+        #[test]
+        fn has_valid_opcode() {
+            assert_eq!(Instruction::new(B_INSTR).opcode(), 0x63);
+        }
     
-    #[test]
-    fn i_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(I_INSTR).imm(), Some(-12));
-    }
-
-    #[test]
-    fn i_type_instr_sign_extends_imm_field_value() {
-        // addi x2, x2, -32
-        let instr = 0xfe010113;
-
-        let imm = Instruction::new(instr).imm().unwrap();
-
-        assert_eq!(imm.is_negative(), true);
-    }
-
-    #[test]
-    fn j_type_instr_has_correct_format() {
-        assert_eq!(Instruction::new(J_INSTR).format(), J);
-    }
-
-    #[test]
-    fn j_type_instr_has_correct_opcode_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).opcode(), 0x6f);
-    }
-
-    #[test]
-    fn j_type_instr_has_correct_rd_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).rd(), Some(0x00));
-    }
-
-    #[test]
-    fn j_type_instr_has_no_funct3_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).funct3(), None);
-    }
-
-    #[test]
-    fn j_type_instr_has_no_rs1_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).rs1(), None);
-    }
-
-    #[test]
-    fn j_type_instr_has_no_rs2_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).rs2(), None);
-    }
-
-    #[test]
-    fn j_type_instr_has_no_funct7_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).funct7(), None);
-    }
+        #[test]
+        fn has_no_rd() {
+            assert_eq!(Instruction::new(B_INSTR).rd(), None);
+        }
     
-    #[test]
-    fn j_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(J_INSTR).imm(), Some(0x4000));
-    }
-
-    #[test]
-    fn j_type_instr_sign_extends_imm_field_value() {
-        // jal x0, -391854
-        let instr = 0xd52a006f;
-
-        let imm = Instruction::new(instr).imm().unwrap();
-
-        assert_eq!(imm.is_negative(), true);
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_format() {
-        assert_eq!(Instruction::new(R_INSTR).format(), R);
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_opcode_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).opcode(), 0x33);
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_rd_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).rd(), Some(0x05));
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_funct3_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).funct3(), Some(0x00));
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_rs1_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).rs1(), Some(0x07));
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_rs2_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).rs2(), Some(0x03));
-    }
-
-    #[test]
-    fn r_type_instr_has_correct_funct7_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).funct7(), Some(0x20));
-    }
+        #[test]
+        fn has_funct3() {
+            assert_eq!(Instruction::new(B_INSTR).funct3(), Some(0x01));
+        }
     
-    #[test]
-    fn r_type_instr_has_no_imm_field_value() {
-        assert_eq!(Instruction::new(R_INSTR).imm(), None);
-    }
-
-    #[test]
-    fn s_type_instr_has_correct_format() {
-        assert_eq!(Instruction::new(S_INSTR).format(), S);
-    }
-
-    #[test]
-    fn s_type_instr_has_correct_opcode_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).opcode(), 0x23);
-    }
-
-    #[test]
-    fn s_type_instr_has_no_rd_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).rd(), None);
-    }
-
-    #[test]
-    fn s_type_instr_has_correct_funct3_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).funct3(), Some(0x02));
-    }
-
-    #[test]
-    fn s_type_instr_has_correct_rs1_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).rs1(), Some(0x0c));
-    }
-
-    #[test]
-    fn s_type_instr_has_correct_rs2_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).rs2(), Some(0x06));
-    }
-
-    #[test]
-    fn s_type_instr_has_no_funct7_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).funct7(), None);
-    }
+        #[test]
+        fn has_rs1() {
+            assert_eq!(Instruction::new(B_INSTR).rs1(), Some(0x09));
+        }
     
-    #[test]
-    fn s_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(S_INSTR).imm(), Some(0x04));
-    }
-
-    #[test]
-    fn s_type_instr_sign_extends_imm_field_value() {
-        // sh x29, -28(x5)
-        let instr = 0xffd29223;
-
-        let imm = Instruction::new(instr).imm().unwrap();
-        assert_eq!(imm.is_negative(), true);
-    }
-
-    #[test]
-    fn u_type_instr_has_correct_format() {
-        assert_eq!(Instruction::new(U_INSTR).format(), U);
-    }
-
-    #[test]
-    fn u_type_instr_has_correct_opcode_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).opcode(), 0x37);
-    }
-
-    #[test]
-    fn u_type_instr_has_correct_rd_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).rd(), Some(0x0a));
-    }
-
-    #[test]
-    fn u_type_instr_has_no_funct3_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).funct3(), None);
-    }
-
-    #[test]
-    fn u_type_instr_has_no_rs1_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).rs1(), None);
-    }
-
-    #[test]
-    fn u_type_instr_has_no_rs2_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).rs2(), None);
-    }
-
-    #[test]
-    fn u_type_instr_has_no_funct7_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).funct7(), None);
-    }
+        #[test]
+        fn has_rs2() {
+            assert_eq!(Instruction::new(B_INSTR).rs2(), Some(0x0b));
+        }
     
-    #[test]
-    fn u_type_instr_has_correct_imm_field_value() {
-        assert_eq!(Instruction::new(U_INSTR).imm(), Some(-1));
+        #[test]
+        fn has_no_funct7() {
+            assert_eq!(Instruction::new(B_INSTR).funct7(), None);
+        }
+        
+        #[test]
+        fn has_imm() {
+            assert_eq!(Instruction::new(B_INSTR).imm(), Some(0x14));
+        }
+    
+        #[test]
+        fn sign_extends_imm() {
+            let imm = Instruction::new(0xfe529ae3).imm().unwrap();
+            assert_eq!(imm.is_negative(), true);
+        }
     }
 
-    #[test]
-    fn u_type_instr_sign_extends_imm_field_value() {
-        let imm = Instruction::new(U_INSTR).imm().unwrap();
-        assert_eq!(imm.is_negative(), true);
+    mod i_type {
+        use super::*;
+
+        // addi     x10, x11 -12
+        // opcode:  0x13,
+        // rd:      0x0a,
+        // funct3:  0x00,
+        // rs1:     0x0b,
+        // imm:     0xff4,
+        const I_INSTR: u32 = 0xff458513;
+        
+            #[test]
+            fn has_i_format() {
+                assert_eq!(Instruction::new(I_INSTR).format(), I);
+            }
+        
+            #[test]
+            fn has_valid_opcode() {
+                assert_eq!(Instruction::new(I_INSTR).opcode(), 0x13);
+            }
+        
+            #[test]
+            fn has_rd() {
+                assert_eq!(Instruction::new(I_INSTR).rd(), Some(0x0a));
+            }
+        
+            #[test]
+            fn has_funct3() {
+                assert_eq!(Instruction::new(I_INSTR).funct3(), Some(0x00));
+            }
+        
+            #[test]
+            fn has_rs1() {
+                assert_eq!(Instruction::new(I_INSTR).rs1(), Some(0x0b));
+            }
+        
+            #[test]
+            fn has_no_rs2() {
+                assert_eq!(Instruction::new(I_INSTR).rs2(), None);
+            }
+        
+            #[test]
+            fn has_no_funct7() {
+                assert_eq!(Instruction::new(I_INSTR).funct7(), None);
+            }
+            
+            #[test]
+            fn has_imm() {
+                assert_eq!(Instruction::new(I_INSTR).imm(), Some(-12));
+            }
+        
+            #[test]
+            fn sign_extends_imm() {
+                // addi x2, x2, -32
+                let instr = 0xfe010113;
+        
+                let imm = Instruction::new(instr).imm().unwrap();
+        
+                assert_eq!(imm.is_negative(), true);
+            }
+    }
+
+    mod j_type {
+        use super::*;
+
+            // jal      x0, 64
+            // opcode:  0x6f,
+            // rd:      0x00,
+            // imm:     0x4000,
+            const J_INSTR: u32 = 0x0400006f;
+
+            #[test]
+            fn has_j_format() {
+                assert_eq!(Instruction::new(J_INSTR).format(), J);
+            }
+        
+            #[test]
+            fn has_valid_opcode() {
+                assert_eq!(Instruction::new(J_INSTR).opcode(), 0x6f);
+            }
+        
+            #[test]
+            fn has_rd() {
+                assert_eq!(Instruction::new(J_INSTR).rd(), Some(0x00));
+            }
+        
+            #[test]
+            fn has_no_funct3() {
+                assert_eq!(Instruction::new(J_INSTR).funct3(), None);
+            }
+        
+            #[test]
+            fn has_no_rs1() {
+                assert_eq!(Instruction::new(J_INSTR).rs1(), None);
+            }
+        
+            #[test]
+            fn has_no_rs2() {
+                assert_eq!(Instruction::new(J_INSTR).rs2(), None);
+            }
+        
+            #[test]
+            fn has_no_funct7() {
+                assert_eq!(Instruction::new(J_INSTR).funct7(), None);
+            }
+            
+            #[test]
+            fn has_imm() {
+                assert_eq!(Instruction::new(J_INSTR).imm(), Some(0x4000));
+            }
+        
+            #[test]
+            fn sign_extends_imm() {
+                // jal x0, -391854
+                let instr = 0xd52a006f;
+        
+                let imm = Instruction::new(instr).imm().unwrap();
+        
+                assert_eq!(imm.is_negative(), true);
+            }
+    }
+
+    mod r_type {
+        use super::*;
+
+            // sub      x5, x7, x3
+            // opcode:  0x33, 
+            // rd:      0x05, 
+            // funct3:  0x00, 
+            // rs1:     0x07, 
+            // rs2:     0x03, 
+            // funct7:  0x20,
+            const R_INSTR: u32 = 0x403382b3;
+
+            #[test]
+            fn has_r_format() {
+                assert_eq!(Instruction::new(R_INSTR).format(), R);
+            }
+        
+            #[test]
+            fn has_valid_opcode() {
+                assert_eq!(Instruction::new(R_INSTR).opcode(), 0x33);
+            }
+        
+            #[test]
+            fn has_rd() {
+                assert_eq!(Instruction::new(R_INSTR).rd(), Some(0x05));
+            }
+        
+            #[test]
+            fn has_funct3() {
+                assert_eq!(Instruction::new(R_INSTR).funct3(), Some(0x00));
+            }
+        
+            #[test]
+            fn has_rs1() {
+                assert_eq!(Instruction::new(R_INSTR).rs1(), Some(0x07));
+            }
+        
+            #[test]
+            fn has_rs2() {
+                assert_eq!(Instruction::new(R_INSTR).rs2(), Some(0x03));
+            }
+        
+            #[test]
+            fn has_funct7() {
+                assert_eq!(Instruction::new(R_INSTR).funct7(), Some(0x20));
+            }
+            
+            #[test]
+            fn has_no_imm() {
+                assert_eq!(Instruction::new(R_INSTR).imm(), None);
+            }
+    }
+
+    mod s_type {
+        use super::*;
+
+        // sw       x6, 4(x12)
+        // opcode:  0x23,
+        // funct3:  0x02,
+        // rs1:     0x0c,
+        // rs2:     0x06,
+        // imm:     0x04,
+        const S_INSTR: u32 = 0x00662223;
+
+        #[test]
+        fn has_s_format() {
+            assert_eq!(Instruction::new(S_INSTR).format(), S);
+        }
+    
+        #[test]
+        fn has_valid_opcode() {
+            assert_eq!(Instruction::new(S_INSTR).opcode(), 0x23);
+        }
+    
+        #[test]
+        fn has_no_rd() {
+            assert_eq!(Instruction::new(S_INSTR).rd(), None);
+        }
+    
+        #[test]
+        fn has_funct3() {
+            assert_eq!(Instruction::new(S_INSTR).funct3(), Some(0x02));
+        }
+    
+        #[test]
+        fn has_rs1() {
+            assert_eq!(Instruction::new(S_INSTR).rs1(), Some(0x0c));
+        }
+    
+        #[test]
+        fn has_rs2() {
+            assert_eq!(Instruction::new(S_INSTR).rs2(), Some(0x06));
+        }
+    
+        #[test]
+        fn has_no_funct7() {
+            assert_eq!(Instruction::new(S_INSTR).funct7(), None);
+        }
+        
+        #[test]
+        fn has_imm() {
+            assert_eq!(Instruction::new(S_INSTR).imm(), Some(0x04));
+        }
+    
+        #[test]
+        fn sign_extends_imm() {
+            // sh x29, -28(x5)
+            let instr = 0xffd29223;
+    
+            let imm = Instruction::new(instr).imm().unwrap();
+            assert_eq!(imm.is_negative(), true);
+        }
+    }
+
+    mod u_type {
+        use super::*;
+
+        // lui      x10, 0xfffff
+        // opcode:  0x37,
+        // rd:      0x0a,
+        // imm:     0xfffff
+        const U_INSTR: u32 = 0xfffff537;    
+    
+        #[test]
+        fn has_u_format() {
+            assert_eq!(Instruction::new(U_INSTR).format(), U);
+        }
+    
+        #[test]
+        fn has_valid_opcode() {
+            assert_eq!(Instruction::new(U_INSTR).opcode(), 0x37);
+        }
+    
+        #[test]
+        fn has_rd() {
+            assert_eq!(Instruction::new(U_INSTR).rd(), Some(0x0a));
+        }
+    
+        #[test]
+        fn has_no_funct3() {
+            assert_eq!(Instruction::new(U_INSTR).funct3(), None);
+        }
+    
+        #[test]
+        fn has_no_rs1() {
+            assert_eq!(Instruction::new(U_INSTR).rs1(), None);
+        }
+    
+        #[test]
+        fn has_no_rs2() {
+            assert_eq!(Instruction::new(U_INSTR).rs2(), None);
+        }
+    
+        #[test]
+        fn has_no_funct7() {
+            assert_eq!(Instruction::new(U_INSTR).funct7(), None);
+        }
+        
+        #[test]
+        fn has_imm() {
+            assert_eq!(Instruction::new(U_INSTR).imm(), Some(-1));
+        }
+    
+        #[test]
+        fn sign_extends_imm() {
+            let imm = Instruction::new(U_INSTR).imm().unwrap();
+            assert_eq!(imm.is_negative(), true);
+        }
     }
 }
