@@ -141,20 +141,20 @@ mod tests {
                 -100,
             );
         }
-    
+        
         #[test]
         fn integer_overflow_wraps_around() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, i32::MIN, 1),
-                i32::MAX,
+                Alu::new().run(&ArithmeticSub, i32::MAX, -1),
+                i32::MIN,
             );
         }
     
         #[test]
         fn integer_underflow_wraps_around() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, i32::MAX, -1),
-                i32::MIN,
+                Alu::new().run(&ArithmeticSub, i32::MIN, 1),
+                i32::MAX,
             );
         }
     }
