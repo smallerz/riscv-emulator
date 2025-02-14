@@ -51,6 +51,12 @@ impl Alu {
     }
 }
 
+impl Default for Alu {
+    fn default() -> Self {
+        Alu::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{ Alu, Op::* };
@@ -61,7 +67,7 @@ mod tests {
         #[test]
         fn adds_two_positive_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticAdd, 50, 50),
+                Alu::default().run(&ArithmeticAdd, 50, 50),
                 100,
             );
         }
@@ -69,7 +75,7 @@ mod tests {
         #[test]
         fn adds_two_negative_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticAdd, -50, -50),
+                Alu::default().run(&ArithmeticAdd, -50, -50),
                 -100,
             );
         }
@@ -77,7 +83,7 @@ mod tests {
         #[test]
         fn adds_positive_and_negative_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticAdd, 50, -50),
+                Alu::default().run(&ArithmeticAdd, 50, -50),
                 0,
             );
         }
@@ -85,7 +91,7 @@ mod tests {
         #[test]
         fn adds_negative_and_positive_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticAdd, -50, 50),
+                Alu::default().run(&ArithmeticAdd, -50, 50),
                 0,
             );
         }
@@ -93,7 +99,7 @@ mod tests {
         #[test]
         fn integer_overflow_wraps_around() {
             assert_eq!(
-                Alu::new().run(&ArithmeticAdd, i32::MAX, 1),
+                Alu::default().run(&ArithmeticAdd, i32::MAX, 1),
                 i32::MIN,
             );
         }
@@ -101,7 +107,7 @@ mod tests {
         #[test]
         fn integer_underflow_wraps_around() {
             assert_eq!(
-                Alu::new().run(&ArithmeticAdd, i32::MIN, -1),
+                Alu::default().run(&ArithmeticAdd, i32::MIN, -1),
                 i32::MAX,
             );
         }
@@ -113,7 +119,7 @@ mod tests {
         #[test]
         fn subtractss_two_positive_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, 50, 50),
+                Alu::default().run(&ArithmeticSub, 50, 50),
                 0,
             );
         }
@@ -121,7 +127,7 @@ mod tests {
         #[test]
         fn subtracts_two_negative_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, -50, -50),
+                Alu::default().run(&ArithmeticSub, -50, -50),
                 0,
             );
         }
@@ -129,7 +135,7 @@ mod tests {
         #[test]
         fn subtracts_positive_and_negative_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, 50, -50),
+                Alu::default().run(&ArithmeticSub, 50, -50),
                 100,
             );
         }
@@ -137,7 +143,7 @@ mod tests {
         #[test]
         fn subtracts_negative_and_positive_integers() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, -50, 50),
+                Alu::default().run(&ArithmeticSub, -50, 50),
                 -100,
             );
         }
@@ -145,7 +151,7 @@ mod tests {
         #[test]
         fn integer_overflow_wraps_around() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, i32::MAX, -1),
+                Alu::default().run(&ArithmeticSub, i32::MAX, -1),
                 i32::MIN,
             );
         }
@@ -153,7 +159,7 @@ mod tests {
         #[test]
         fn integer_underflow_wraps_around() {
             assert_eq!(
-                Alu::new().run(&ArithmeticSub, i32::MIN, 1),
+                Alu::default().run(&ArithmeticSub, i32::MIN, 1),
                 i32::MAX,
             );
         }
@@ -165,7 +171,7 @@ mod tests {
         #[test]
         fn zero_and_zero_equals_zero() {
             assert_eq!(
-                Alu::new().run(&LogicalAnd, 0x00, 0x00),
+                Alu::default().run(&LogicalAnd, 0b0, 0b0),
                 0x00,
             );
         }
@@ -173,7 +179,7 @@ mod tests {
         #[test]
         fn zero_and_one_equals_zero() {
             assert_eq!(
-                Alu::new().run(&LogicalAnd, 0x00, 0x01),
+                Alu::default().run(&LogicalAnd, 0b0, 0b1),
                 0x00,
             );
         }
@@ -181,7 +187,7 @@ mod tests {
         #[test]
         fn one_and_zero_equals_zero() {
             assert_eq!(
-                Alu::new().run(&LogicalAnd, 0x01, 0x00),
+                Alu::default().run(&LogicalAnd, 0b1, 0b0),
                 0x00,
             );
         }
@@ -189,7 +195,7 @@ mod tests {
         #[test]
         fn one_and_one_equals_one() {
             assert_eq!(
-                Alu::new().run(&LogicalAnd, 0x01, 0x01),
+                Alu::default().run(&LogicalAnd, 0b1, 0b1),
                 0x01,
             );
         }
@@ -201,7 +207,7 @@ mod tests {
         #[test]
         fn zero_or_zero_equals_zero() {
             assert_eq!(
-                Alu::new().run(&LogicalOr, 0x00, 0x00),
+                Alu::default().run(&LogicalOr, 0b0, 0b0),
                 0x00,
             );
         }
@@ -209,7 +215,7 @@ mod tests {
         #[test]
         fn zero_or_one_equals_one() {
             assert_eq!(
-                Alu::new().run(&LogicalOr, 0x00, 0x01),
+                Alu::default().run(&LogicalOr, 0b0, 0b1),
                 0x01,
             );
         }
@@ -217,7 +223,7 @@ mod tests {
         #[test]
         fn one_or_zero_equals_one() {
             assert_eq!(
-                Alu::new().run(&LogicalOr, 0x01, 0x00),
+                Alu::default().run(&LogicalOr, 0b1, 0b0),
                 0x01,
             );
         }
@@ -225,7 +231,7 @@ mod tests {
         #[test]
         fn one_or_one_equals_one() {
             assert_eq!(
-                Alu::new().run(&LogicalOr, 0x01, 0x01),
+                Alu::default().run(&LogicalOr, 0b1, 0b1),
                 0x01,
             );
         }
@@ -237,7 +243,7 @@ mod tests {
         #[test]
         fn zero_xor_zero_equals_zero() {
             assert_eq!(
-                Alu::new().run(&LogicalExclusiveOr, 0x00, 0x00),
+                Alu::default().run(&LogicalExclusiveOr, 0b0, 0b0),
                 0x00,
             );
         }
@@ -245,7 +251,7 @@ mod tests {
         #[test]
         fn zero_xor_one_equals_one() {
             assert_eq!(
-                Alu::new().run(&LogicalExclusiveOr, 0x00, 0x01),
+                Alu::default().run(&LogicalExclusiveOr, 0b0, 0b1),
                 0x01,
             );
         }
@@ -253,7 +259,7 @@ mod tests {
         #[test]
         fn one_xor_zero_equals_one() {
             assert_eq!(
-                Alu::new().run(&LogicalExclusiveOr, 0x01, 0x00),
+                Alu::default().run(&LogicalExclusiveOr, 0b1, 0b0),
                 0x01,
             );
         }
@@ -261,7 +267,7 @@ mod tests {
         #[test]
         fn one_xor_one_equals_zero() {
             assert_eq!(
-                Alu::new().run(&LogicalExclusiveOr, 0x01, 0x01),
+                Alu::default().run(&LogicalExclusiveOr, 0b1, 0b1),
                 0x00,
             );
         }
@@ -273,7 +279,7 @@ mod tests {
         #[test]
         fn shifts_left() {
             assert_eq!(
-                Alu::new().run(
+                Alu::default().run(
                     &ShiftLeftLogical, 
                     0b10101010101010101010101010101010_u32 as i32, 
                     1,
@@ -289,7 +295,7 @@ mod tests {
         #[test]
         fn shifts_right() {
             assert_eq!(
-                Alu::new().run(
+                Alu::default().run(
                     &ShiftRightArithmetic, 
                     0b10100000 as i32, 
                     4,
@@ -301,7 +307,7 @@ mod tests {
         #[test]
         fn sign_extends_positive() {
             assert_eq!(
-                Alu::new().run(
+                Alu::default().run(
                     &ShiftRightArithmetic, 
                     0b01111111111111111111111111111111 as i32, 
                     1,
@@ -313,7 +319,7 @@ mod tests {
         #[test]
         fn sign_extends_negative() {
             assert_eq!(
-                Alu::new().run(
+                Alu::default().run(
                     &ShiftRightArithmetic,
                     0b10000000000000000000000000000000_u32 as i32, 
                     1,
@@ -329,7 +335,7 @@ mod tests {
         #[test]
         fn shifts_right() {
             assert_eq!(
-                Alu::new().run(
+                Alu::default().run(
                     &ShiftRightLogical, 
                     0b10100000 as i32, 
                     4,
@@ -341,7 +347,7 @@ mod tests {
         #[test]
         fn zero_extends() {
             assert_eq!(
-                Alu::new().run(
+                Alu::default().run(
                     &ShiftRightLogical, 
                     0b11111111111111111111111111111111_u32 as i32, 
                     1,
