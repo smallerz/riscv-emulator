@@ -66,10 +66,13 @@ impl Processor {
                 | LogicalAndImmediate
                 | LogicalExclusiveOrImmediate
                 | LogicalOrImmediate
+                | ShiftLeftLogicalImmediate
+                | ShiftRightArithmeticImmediate
+                | ShiftRightLogicalImmediate
             ) => {
                 self.exec_alu_op_i(
                     &op.unwrap(), 
-                    instr
+                    instr,
                 );
             },
 
@@ -80,10 +83,13 @@ impl Processor {
                 | LogicalAnd
                 | LogicalExclusiveOr
                 | LogicalOr
+                | ShiftLeftLogical
+                | ShiftRightArithmetic
+                | ShiftRightLogical
             ) => {
                 self.exec_alu_op_r(
                     &op.unwrap(), 
-                    instr
+                    instr,
                 );
             },
 
