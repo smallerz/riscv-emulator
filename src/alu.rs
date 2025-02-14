@@ -35,15 +35,15 @@ impl Alu {
             },
 
             ShiftLeftLogical | ShiftLeftLogicalImmediate => {
-                x << y
+                x.wrapping_shl(y as u32)
             },
 
             ShiftRightArithmetic | ShiftRightArithmeticImmediate => {
-                x >> y
+                x.wrapping_shr(y as u32)
             },
 
             ShiftRightLogical | ShiftRightLogicalImmediate => {
-                (x as u32 >> y) as i32
+                (x as u32).wrapping_shr(y as u32) as i32
             }
 
             _ => todo!(),
@@ -117,7 +117,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn subtractss_two_positive_integers() {
+        fn subtracts_two_positive_integers() {
             assert_eq!(
                 Alu::default().run(&ArithmeticSub, 50, 50),
                 0,
@@ -172,7 +172,7 @@ mod tests {
         fn zero_and_zero_equals_zero() {
             assert_eq!(
                 Alu::default().run(&LogicalAnd, 0b0, 0b0),
-                0x00,
+                0b0,
             );
         }
 
@@ -180,7 +180,7 @@ mod tests {
         fn zero_and_one_equals_zero() {
             assert_eq!(
                 Alu::default().run(&LogicalAnd, 0b0, 0b1),
-                0x00,
+                0b0,
             );
         }
 
@@ -188,7 +188,7 @@ mod tests {
         fn one_and_zero_equals_zero() {
             assert_eq!(
                 Alu::default().run(&LogicalAnd, 0b1, 0b0),
-                0x00,
+                0b0,
             );
         }
 
@@ -196,7 +196,7 @@ mod tests {
         fn one_and_one_equals_one() {
             assert_eq!(
                 Alu::default().run(&LogicalAnd, 0b1, 0b1),
-                0x01,
+                0b1,
             );
         }
     }
@@ -208,7 +208,7 @@ mod tests {
         fn zero_or_zero_equals_zero() {
             assert_eq!(
                 Alu::default().run(&LogicalOr, 0b0, 0b0),
-                0x00,
+                0b0,
             );
         }
 
@@ -216,7 +216,7 @@ mod tests {
         fn zero_or_one_equals_one() {
             assert_eq!(
                 Alu::default().run(&LogicalOr, 0b0, 0b1),
-                0x01,
+                0b1,
             );
         }
 
@@ -224,7 +224,7 @@ mod tests {
         fn one_or_zero_equals_one() {
             assert_eq!(
                 Alu::default().run(&LogicalOr, 0b1, 0b0),
-                0x01,
+                0b1,
             );
         }
 
@@ -232,7 +232,7 @@ mod tests {
         fn one_or_one_equals_one() {
             assert_eq!(
                 Alu::default().run(&LogicalOr, 0b1, 0b1),
-                0x01,
+                0b1,
             );
         }
     }
@@ -244,7 +244,7 @@ mod tests {
         fn zero_xor_zero_equals_zero() {
             assert_eq!(
                 Alu::default().run(&LogicalExclusiveOr, 0b0, 0b0),
-                0x00,
+                0b0,
             );
         }
 
@@ -252,7 +252,7 @@ mod tests {
         fn zero_xor_one_equals_one() {
             assert_eq!(
                 Alu::default().run(&LogicalExclusiveOr, 0b0, 0b1),
-                0x01,
+                0b1,
             );
         }
 
@@ -260,7 +260,7 @@ mod tests {
         fn one_xor_zero_equals_one() {
             assert_eq!(
                 Alu::default().run(&LogicalExclusiveOr, 0b1, 0b0),
-                0x01,
+                0b1,
             );
         }
 
@@ -268,7 +268,7 @@ mod tests {
         fn one_xor_one_equals_zero() {
             assert_eq!(
                 Alu::default().run(&LogicalExclusiveOr, 0b1, 0b1),
-                0x00,
+                0b0,
             );
         }
     }
@@ -285,6 +285,25 @@ mod tests {
                     1,
                 ),
                 0b01010101010101010101010101010100,
+            );
+        }
+
+        #[test]
+        fn masks_shift_amount() {
+            const X: u32 = 0xffffffff;
+            let alu = Alu::default();
+
+            assert_eq!(
+                alu.run(
+                    &ShiftLeftLogical,
+                    X as i32,
+                    33,
+                ),
+                alu.run(
+                    &ShiftLeftLogical,
+                    X as i32,
+                    1,
+                ),
             );
         }
     }
@@ -327,6 +346,25 @@ mod tests {
                 0b11000000000000000000000000000000_u32 as i32,
             );
         }
+
+        #[test]
+        fn masks_shift_amount() {
+            const X: u32 = 0xf0000000;
+            let alu = Alu::default();
+
+            assert_eq!(
+                alu.run(
+                    &ShiftRightArithmetic,
+                    X as i32,
+                    33,
+                ),
+                alu.run(
+                    &ShiftRightArithmetic,
+                    X as i32,
+                    1,
+                ),
+            );
+        }
     }
 
     mod srl {
@@ -353,6 +391,25 @@ mod tests {
                     1,
                 ),
                 0b01111111111111111111111111111111_u32 as i32,
+            );
+        }
+
+        #[test]
+        fn masks_shift_amount() {
+            const X: u32 = 0xf0000000;
+            let alu = Alu::default();
+
+            assert_eq!(
+                alu.run(
+                    &ShiftRightLogical,
+                    X as i32,
+                    33,
+                ),
+                alu.run(
+                    &ShiftRightLogical,
+                    X as i32,
+                    1,
+                ),
             );
         }
     }
