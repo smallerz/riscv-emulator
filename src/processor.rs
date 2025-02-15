@@ -93,7 +93,7 @@ impl Processor {
                 );
             },
 
-            Some(LoadUpperImmediate) => todo!(),
+            Some(LoadUpperImmediate) => self.exec_instr_lui(instr),
 
             _ => self.handle_illegal_instr(instr),
         }
@@ -119,6 +119,21 @@ impl Processor {
                 instr.imm().unwrap(),
             ) as u32
         );
+    }
+
+    /// Executes a `lui` instruction.
+    /// `lui` writes an immediate into the upper 20 bits 
+    /// of a destination register.
+    #[inline]
+    fn exec_instr_lui(&mut self, instr: &Instruction) {
+        self.reg_x.write(
+            instr.rd().unwrap(),
+            self.alu.run(
+                &Op::ShiftLeftLogicalImmediate,
+                instr.imm().unwrap(),
+                12,
+            ) as u32
+        )
     }
 
     /// Fetches and returns the next instruction to execute from memory.
