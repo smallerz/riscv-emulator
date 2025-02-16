@@ -60,6 +60,20 @@ impl Processor {
     /// Executes an instruction.
     pub fn execute(&mut self, instr: &Instruction) {
         match Decoder::decode(instr) {
+            op @ Some(
+                BranchEqual
+                | BranchGreaterThanOrEqualTo
+                | BranchGreaterThanOrEqualToUnsigned
+                | BranchLessThan
+                | BranchLessThanUnsigned
+                | BranchNotEqual
+            ) => {
+                self.exec_alu_op_b(
+                    &op.unwrap(),
+                    instr,
+                )
+            },
+
             // Instructions that perform register-immediate operations.
             op @ Some(
                 ArithmeticAddImmediate 
@@ -98,7 +112,31 @@ impl Processor {
             _ => self.handle_illegal_instr(instr),
         }
     }
+    
+    fn exec_alu_op_b(&mut self, op: &Op, instr: &Instruction) {
+        if let 1 = self.alu.run(
+            op, 
+            self.reg_x.read(instr.rs1().unwrap()) as i32, 
+            self.reg_x.read(instr.rs2().unwrap()) as i32,
+        ) {
+            // TODO:
+            // The conditional branch instructions will generate an 
+            // instruction-address-misaligned exception if the
+            // target address is not aligned to a four-byte boundary
+            // and the branch condition evaluates to true. If the
+            // branch condition evaluates to false, the 
+            // instruction-address-misaligned exception will not be raised.
 
+            // NOTE:
+            // Instruction-address-misaligned exceptions are not possible
+            // on machines that support extensions with 16-bit aligned 
+            // instructions, such as the compressed instruction-set
+            // extension, C.
+
+            self.pc = self.pc.wrapping_add_signed(instr.imm().unwrap());
+        }
+    }
+    
     fn exec_alu_op_r(&mut self, op: &Op, instr: &Instruction) {
         self.reg_x.write(
             instr.rd().unwrap(),
@@ -109,7 +147,7 @@ impl Processor {
             ) as u32
         );
     }
-
+    
     fn exec_alu_op_i(&mut self, op: &Op, instr: &Instruction) {
         self.reg_x.write(
             instr.rd().unwrap(),

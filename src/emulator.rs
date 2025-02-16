@@ -45,6 +45,12 @@ impl Emulator {
                 self.proc[0].execute(&instr);
             });
 
+        println!(
+            "\nProgram Counter:\t{:#010x} / {}", 
+            self.proc[0].pc,
+            self.proc[0].pc, 
+        );
+
         println!("\nRegisters:\n");
 
         (0 .. self.proc[0].reg_x.len() / 2)
