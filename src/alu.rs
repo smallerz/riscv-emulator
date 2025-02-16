@@ -1,7 +1,8 @@
 use crate::op::{ Op, Op::* };
 
 /// Arithmetic Logic Unit (ALU)
-/// Responsible for performing arithmetic, logical and shift operations.
+/// Responsible for performing arithmetic, comparison, logical and 
+/// shift operations.
 #[derive(Debug)]
 pub struct Alu;
 
@@ -20,6 +21,30 @@ impl Alu {
 
             ArithmeticSub => {
                 x.wrapping_sub(y)
+            },
+
+            BranchEqual => {
+                (x == y) as i32
+            },
+
+            BranchGreaterThanOrEqualTo => {
+                (x >= y) as i32
+            },
+
+            BranchGreaterThanOrEqualToUnsigned => {
+                (x as u32 >= y as u32) as i32
+            },
+
+            BranchLessThan => {
+                (x < y) as i32
+            },
+
+            BranchLessThanUnsigned => {
+                ((x as u32) < y as u32) as i32
+            },
+
+            BranchNotEqual => {
+                (x != y) as i32
             },
 
             LogicalAnd | LogicalAndImmediate => {
@@ -44,7 +69,7 @@ impl Alu {
 
             ShiftRightLogical | ShiftRightLogicalImmediate => {
                 (x as u32).wrapping_shr(y as u32) as i32
-            }
+            },
 
             _ => todo!(),
         }
@@ -161,6 +186,546 @@ mod tests {
             assert_eq!(
                 Alu::default().run(&ArithmeticSub, i32::MIN, 1),
                 i32::MAX,
+            );
+        }
+    }
+
+    mod beq {
+        use super::*;
+
+        #[test]
+        fn equality_is_truthy() {
+            assert_eq!(
+                Alu::default().run(&BranchEqual, 2, 2),
+                1,
+                "Two identical positive integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchEqual, -2, -2),
+                1,
+                "Two identical negative integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchEqual, 0, 0),
+                1,
+                "Zero is equal to itself.",
+            );
+        }
+
+        #[test]
+        fn inequality_is_falsy() {
+            assert_eq!(
+                Alu::default().run(&BranchEqual, 1, 2),
+                0,
+                "Two distinct positive integers are not equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchEqual, -1, -2),
+                0,
+                "Two distinct negative integers are not equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchEqual, 1, -1),
+                0,
+                "A positive integer is not equal to a negative integer.",
+            );
+        }
+    }
+
+    mod bge {
+        use super::*;
+
+        #[test]
+        fn greater_than_is_truthy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo,
+                    0x0000002, 
+                    0x0000001,
+                ),
+                1,
+                "A larger integer is greater than a smaller integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo, 
+                    0x00000001, 
+                    0xffffffff_u32 as i32,
+                ),
+                1,
+                "A positive integer is greater than a negative integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo, 
+                    0x00000000, 
+                    0xffffffff_u32 as i32,
+                ),
+                1,
+                "Zero is greater than a negative integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo, 
+                    0x00000001,
+                    0x00000000, 
+                ),
+                1,
+                "A positive integer is greater than zero.",
+            );
+        }
+
+        #[test]
+        fn equality_is_truthy() {
+            assert_eq!(
+                Alu::default().run(&BranchGreaterThanOrEqualTo, 2, 2),
+                1,
+                "Two identical positive integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchGreaterThanOrEqualTo, -2, -2),
+                1,
+                "Two identical negative integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchGreaterThanOrEqualTo, 0, 0),
+                1,
+                "Zero is equal to itself.",
+            );
+        }
+
+        #[test]
+        fn less_than_is_falsy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo,
+                    0x0000001,
+                    0x0000002, 
+                ),
+                0,
+                "A smaller integer is not greater than a larger integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo, 
+                    0xffffffff_u32 as i32,
+                    0x00000001, 
+                ),
+                0,
+                "A negative integer is not greater than a positive integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo, 
+                    0xffffffff_u32 as i32,
+                    0x00000000, 
+                ),
+                0,
+                "A negative integer is not greater than zero.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualTo, 
+                    0x00000000,
+                    0x00000001,
+                ),
+                0,
+                "Zero is not greater than a positive integer.",
+            );
+        }
+    }
+
+    mod bgeu {
+        use super::*;
+
+        #[test]
+        fn greater_than_is_truthy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned,
+                    0x0000002, 
+                    0x0000001,
+                ),
+                1,
+                "A larger integer is greater than a smaller integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned, 
+                    0xffffffff_u32 as i32,
+                    0x00000001, 
+                ),
+                1,
+                "Negative is greater than positive in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned, 
+                    0xffffffff_u32 as i32,
+                    0x00000000, 
+                ),
+                1,
+                "Negative is greater than zero in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned, 
+                    0x00000001,
+                    0x00000000, 
+                ),
+                1,
+                "A positive integer is greater than zero.",
+            );
+        }
+
+        #[test]
+        fn equality_is_truthy() {
+            assert_eq!(
+                Alu::default().run(&BranchGreaterThanOrEqualToUnsigned, 2, 2),
+                1,
+                "Two identical positive integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned,
+                    0xffffffff_u32 as i32,
+                    0xffffffff_u32 as i32
+                ),
+                1,
+                "Two identical negatives are equal in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchGreaterThanOrEqualToUnsigned, 0, 0),
+                1,
+                "Zero is equal to itself.",
+            );
+        }
+
+        #[test]
+        fn less_than_is_falsy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned,
+                    0x0000001,
+                    0x0000002, 
+                ),
+                0,
+                "A smaller integer is not greater than a larger integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned, 
+                    0x00000001, 
+                    0xffffffff_u32 as i32,
+                ),
+                0,
+                "Positive isn't greater than negative in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned, 
+                    0x00000000, 
+                    0xffffffff_u32 as i32,
+                ),
+                0,
+                "Zero is not greater than negative in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchGreaterThanOrEqualToUnsigned, 
+                    0x00000000,
+                    0x00000001,
+                ),
+                0,
+                "Zero is not greater than a positive integer.",
+            );
+        }
+    }
+
+    mod blt {
+        use super::*;
+
+        #[test]
+        fn less_than_is_truthy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan,
+                    0x0000001,
+                    0x0000002,
+                ),
+                1,
+                "A smaller integer is less than a larger integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan, 
+                    0xffffffff_u32 as i32,
+                    0x00000001,
+                ),
+                1,
+                "A negative integer is less than a positive integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan, 
+                    0xffffffff_u32 as i32,
+                    0x00000000,
+                ),
+                1,
+                "A negative integer is less than zero.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan,
+                    0x00000000,
+                    0x00000001,
+                ),
+                1,
+                "Zero is less than a positive integer.",
+            );
+        }
+
+        #[test]
+        fn equality_is_falsy() {
+            assert_eq!(
+                Alu::default().run(&BranchLessThan, 2, 2),
+                0,
+                "Falsy when comparing two identical positive integers.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchLessThan, -2, -2),
+                0,
+                "Falsy when comparing two identical negative integers.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchLessThan, 0, 0),
+                0,
+                "Falsy when comparing zero to itself.",
+            );
+        }
+
+        #[test]
+        fn greater_than_is_falsy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan,
+                    0x0000002, 
+                    0x0000001,
+                ),
+                0,
+                "A larger integer is not less than a smaller integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan, 
+                    0x00000001, 
+                    0xffffffff_u32 as i32,
+                ),
+                0,
+                "A positive integer is not less than a negative integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan, 
+                    0x00000000,
+                    0xffffffff_u32 as i32,
+                ),
+                0,
+                "Zero is not less than a negative integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThan, 
+                    0x00000001,
+                    0x00000000,
+                ),
+                0,
+                "A positive intger is not less than zero.",
+            );
+        }
+    }
+
+    mod bltu {
+        use super::*;
+
+        #[test]
+        fn less_than_is_truthy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned,
+                    0x0000001,
+                    0x0000002, 
+                ),
+                1,
+                "A smaller integer is less than a larger integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned,
+                    0x00000001,
+                    0xffffffff_u32 as i32,
+                ),
+                1,
+                "Positive is less than negative in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned,
+                    0x00000000,
+                    0xffffffff_u32 as i32,
+                ),
+                1,
+                "Zero is less than negative in unsigned comparisons.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned,
+                    0x00000000,
+                    0x00000001,
+                ),
+                1,
+                "Zero is less than a positive integer.",
+            );
+        }
+
+        #[test]
+        fn equality_is_falsy() {
+            assert_eq!(
+                Alu::default().run(&BranchLessThanUnsigned, 2, 2),
+                0,
+                "Falsy when comparing two identical positive integers.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchLessThanUnsigned, -2, -2),
+                0,
+                "Falsy when comparing two identical negative integers.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchLessThanUnsigned, 0, 0),
+                0,
+                "Falsy when comparing zero to itself.",
+            );
+        }
+
+        #[test]
+        fn greater_than_is_falsy() {
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned,
+                    0x0000002, 
+                    0x0000001,
+                ),
+                0,
+                "A larger integer is not less than a smaller integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned, 
+                    0xffffffff_u32 as i32,
+                    0x00000001, 
+                ),
+                0,
+                "A negative integer is not less than a positive integer.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned, 
+                    0xffffffff_u32 as i32,
+                    0x00000000,
+                ),
+                0,
+                "A negative integer is not less than zero.",
+            );
+
+            assert_eq!(
+                Alu::default().run(
+                    &BranchLessThanUnsigned, 
+                    0x00000001,
+                    0x00000000,
+                ),
+                0,
+                "A positive intger is not less than zero.",
+            );
+        }
+    }
+
+    mod bne {
+        use super::*;
+
+        #[test]
+        fn equality_is_falsy() {
+            assert_eq!(
+                Alu::default().run(&BranchNotEqual, 2, 2),
+                0,
+                "Two identical positive integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchNotEqual, -2, -2),
+                0,
+                "Two identical negative integers are equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchNotEqual, 0, 0),
+                0,
+                "Zero is equal to itself.",
+            );
+        }
+
+        #[test]
+        fn inequality_is_truthy() {
+            assert_eq!(
+                Alu::default().run(&BranchNotEqual, 1, 2),
+                1,
+                "Two distinct positive integers are not equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchNotEqual, -1, -2),
+                1,
+                "Two distinct negative integers are not equal.",
+            );
+
+            assert_eq!(
+                Alu::default().run(&BranchNotEqual, 1, -1),
+                1,
+                "A positive integer is not equal to a negative integer.",
             );
         }
     }
