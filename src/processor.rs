@@ -60,6 +60,7 @@ impl Processor {
     /// Executes an instruction.
     pub fn execute(&mut self, instr: &Instruction) {
         match Decoder::decode(instr) {
+            // Instructions that perform a conditional branch.
             op @ Some(
                 BranchEqual
                 | BranchGreaterThanOrEqualTo
@@ -87,6 +88,17 @@ impl Processor {
                 self.exec_alu_op_i(
                     &op.unwrap(), 
                     instr,
+                );
+            },
+
+            // Instructions that perform an unconditional branch.
+            op @ Some(
+                JumpAndLink
+                | JumpAndLinkRegister
+            ) => {
+                self.exec_jump(
+                    &op.unwrap(), 
+                    instr
                 );
             },
 
@@ -172,6 +184,31 @@ impl Processor {
                 12,
             ) as u32
         )
+    }
+
+    fn exec_jump(&mut self, op: &Op, instr: &Instruction) {
+        // Write the return address to the destination register.
+        self.reg_x.write(
+            instr.rd().unwrap(),
+            self.pc + 0x04,
+        );
+
+        // Calculate the branch target and set the program counter.
+        self.pc = match op {
+            // target = pc + imm
+            JumpAndLink => {
+                self.pc.wrapping_add_signed(
+                    instr.imm().unwrap(),
+                )
+            },
+            // target = (rs1 + imm) & !1
+            JumpAndLinkRegister => {
+                (self.reg_x.read(instr.rs1().unwrap())
+                    .wrapping_add_signed(instr.imm().unwrap()))
+                    & !0x01
+            },
+            _ => self.pc
+        };
     }
 
     /// Fetches and returns the next instruction to execute from memory.
