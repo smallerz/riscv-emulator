@@ -156,12 +156,12 @@ impl Instruction {
         Instruction::sign_ext(
             // imm[1:10]
             (self.instr >> 21 & 0x3ff) << 1
-            // imm[11]
-            | (self.instr >> 20 & 0x01) << 11
-            // imm[12:19]
-            | (self.instr >> 12 & 0xff) << 12
-            // imm[20]
-            | (self.instr >> 31 & 0x01) << 20,
+                // imm[11]
+                | (self.instr >> 20 & 0x01) << 11
+                // imm[12:19]
+                | (self.instr >> 12 & 0xff) << 12
+                // imm[20]
+                | (self.instr >> 31 & 0x01) << 20,
             20
         )
     }
@@ -198,40 +198,67 @@ impl Display for Instruction {
             "{}",
             match self.format() {
                 B => format!(
+                    // mnemonic rs1, rs2, imm
                     "{:<12} x{}, x{}, {:#010x}",
                     self.mnemonic(),
                     self.rs1().unwrap(),
                     self.rs2().unwrap(),
                     self.imm().unwrap(),
                 ),
-                I => format!(
-                    "{:<12} x{:}, x{}, {:#010x}",
-                    self.mnemonic(),
-                    self.rd().unwrap(),
-                    self.rs1().unwrap(),
-                    self.imm().unwrap(),
-                ),
+
+                I => {
+                    match self.opcode() {
+                        0x03 | 0x67 => {
+                            format!(
+                                // mnemonic rd, imm(rs1)
+                                "{:<12} x{:}, {}(x{})",
+                                self.mnemonic(),
+                                self.rd().unwrap(),
+                                self.imm().unwrap(),
+                                self.rs1().unwrap(),
+                            )
+                        }
+                        _ => {
+                            format!(
+                                // mnemonic rd, rs1, imm
+                                "{:<12} x{:}, x{}, {:#010x}",
+                                self.mnemonic(),
+                                self.rd().unwrap(),
+                                self.rs1().unwrap(),
+                                self.imm().unwrap(),
+                            )
+                        }
+                    }
+                },
+
                 J => format!(
+                    // mnemonic rd, imm
                     "{:<12} x{}, {:#010x}",
                     self.mnemonic(),
                     self.rd().unwrap(),
                     self.imm().unwrap(),
                 ),
+                
                 R => format!(
+                    // mnemonic rd, rs1, rs2
                     "{:<12} x{}, x{}, x{}",
                     self.mnemonic(),
                     self.rd().unwrap(),
                     self.rs1().unwrap(),
                     self.rs2().unwrap(),
                 ),
+
                 S => format!(
+                    // mnemonic rs2, imm(rs1)
                     "{:<12} x{}, {:#010x}(x{})",
                     self.mnemonic(),
                     self.rs2().unwrap(),
                     self.imm().unwrap(),
                     self.rs1().unwrap(),
                 ),
+                
                 U => format!(
+                    // mnemonic rd, imm
                     "{:<12} x{}, {:#010x}",
                     self.mnemonic(),
                     self.rd().unwrap(),
