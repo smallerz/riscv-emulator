@@ -154,7 +154,14 @@ impl Instruction {
     #[inline]
     fn imm_j(&self) -> i32 {
         Instruction::sign_ext(
-            self.instr >> 12 & 0xfffff,
+            // imm[1:10]
+            (self.instr >> 21 & 0x3ff) << 1
+            // imm[11]
+            | (self.instr >> 20 & 0x01) << 11
+            // imm[12:19]
+            | (self.instr >> 12 & 0xff) << 12
+            // imm[20]
+            | (self.instr >> 31 & 0x01) << 20,
             20
         )
     }
@@ -368,7 +375,7 @@ mod tests {
             // jal      x0, 64
             // opcode:  0x6f,
             // rd:      0x00,
-            // imm:     0x4000,
+            // imm:     0x40,
             const J_INSTR: u32 = 0x0400006f;
 
             #[test]
@@ -408,7 +415,7 @@ mod tests {
             
             #[test]
             fn has_imm() {
-                assert_eq!(Instruction::new(J_INSTR).imm(), Some(0x4000));
+                assert_eq!(Instruction::new(J_INSTR).imm(), Some(0x40));
             }
         
             #[test]
