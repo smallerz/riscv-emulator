@@ -111,6 +111,7 @@ impl Decoder {
     #[inline]
     fn decode_instr_u(instr: &Instruction) -> Option<Op> {
         match instr.opcode() {
+            0x17                => Some(AddUpperImmediateProgramCounter),
             0x37                => Some(LoadUpperImmediate),
             _                   => None,
         }
