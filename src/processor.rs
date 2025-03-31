@@ -9,10 +9,23 @@
 // able to use error propagation (e.g. instr.funct3()?...).
 
 use crate::alu::Alu;
+
 use crate::decode::Decoder;
-use crate::instruction::Instruction;
-use crate::op::{ Op, Op::* };
-use crate::register::{AccessLevel, RegistersX};
+
+use crate::instruction::{
+    Instruction,
+    InstructionFormat::*,
+};
+
+use crate::op::{
+    Op,
+    Op::*,
+};
+
+use crate::register::{
+    AccessLevel,
+    RegistersX,
+};
 
 const IALIGN: u32 = 32;
 const XLEN: u32 = 32;
@@ -59,8 +72,20 @@ impl Processor {
 
     /// Executes an instruction.
     pub fn execute(&mut self, instr: &Instruction) {
+        match instr.format() {
+            B => self.exec_instr_b(instr),
+            I => self.exec_instr_i(instr),
+            J => self.exec_instr_j(instr),
+            R => self.exec_instr_r(instr),
+            S => self.exec_instr_s(instr),
+            U => self.exec_instr_u(instr),
+        }
+    }
+    
+    /// Executes a B-type instruction.
+    #[inline]
+    fn exec_instr_b(&mut self, instr: &Instruction) {
         match Decoder::decode(instr) {
-            // Instructions that perform a conditional branch.
             op @ Some(
                 BranchEqual
                 | BranchGreaterThanOrEqualTo
@@ -69,13 +94,43 @@ impl Processor {
                 | BranchLessThanUnsigned
                 | BranchNotEqual
             ) => {
-                self.exec_alu_op_b(
+                if let 1 = self.alu.run(
                     &op.unwrap(),
-                    instr,
-                )
+                    self.reg_x.read(
+                        instr.rs1().unwrap(),
+                    ) as i32, 
+                    self.reg_x.read(
+                        instr.rs2().unwrap(),
+                    ) as i32,
+                ) {
+                    // TODO:
+                    // The conditional branch instructions will generate an 
+                    // instruction-address-misaligned exception if the
+                    // target address is not aligned to a four-byte boundary
+                    // and the branch condition evaluates to true. If the
+                    // branch condition evaluates to false, the 
+                    // instruction-address-misaligned exception will not be raised.
+        
+                    // NOTE:
+                    // Instruction-address-misaligned exceptions are not possible
+                    // on machines that support extensions with 16-bit aligned 
+                    // instructions, such as the compressed instruction-set
+                    // extension, C.
+        
+                    self.pc = self.pc.wrapping_add_signed(
+                        instr.imm().unwrap(),
+                    );
+                }
             },
 
-            // Instructions that perform register-immediate operations.
+            _ => self.handle_illegal_instr(instr),
+        }
+    }
+    
+    /// Executes an I-type instruction.
+    #[inline]
+    fn exec_instr_i(&mut self, instr: &Instruction) {            
+        match Decoder::decode(instr) {  
             op @ Some(
                 ArithmeticAddImmediate 
                 | LogicalAndImmediate
@@ -85,24 +140,52 @@ impl Processor {
                 | ShiftRightArithmeticImmediate
                 | ShiftRightLogicalImmediate
             ) => {
-                self.exec_alu_op_i(
-                    &op.unwrap(), 
+                self.reg_x.write(
+                    instr.rd().unwrap(),
+                    self.alu.run(
+                        &op.unwrap(), 
+                        self.reg_x.read(
+                            instr.rs1().unwrap(),
+                        ) as i32,
+                        instr.imm().unwrap(),
+                    ) as u32,
+                );
+            },
+
+            op @ Some(
+                JumpAndLinkRegister,
+            ) => {
+                self.exec_jump(
+                    op.unwrap(),
+                    instr,
+                );
+            }, 
+
+            _ => self.handle_illegal_instr(instr),
+        }
+    }
+
+    /// Executes a J-type instruction.
+    #[inline]
+    fn exec_instr_j(&mut self, instr: &Instruction) {
+        match Decoder::decode(instr) {
+            op @ Some(
+                JumpAndLink,
+            ) => {
+                self.exec_jump(
+                    op.unwrap(),
                     instr,
                 );
             },
 
-            // Instructions that perform an unconditional branch.
-            op @ Some(
-                JumpAndLink
-                | JumpAndLinkRegister
-            ) => {
-                self.exec_jump(
-                    &op.unwrap(), 
-                    instr
-                );
-            },
+            _ => self.handle_illegal_instr(instr),
+        }
+    }
 
-            // Instructions that perform register-register operations.
+    /// Executes an R-type instruction.
+    #[inline]
+    fn exec_instr_r(&mut self, instr: &Instruction) {
+        match Decoder::decode(instr) {
             op @ Some(
                 ArithmeticAdd
                 | ArithmeticSub
@@ -113,97 +196,63 @@ impl Processor {
                 | ShiftRightArithmetic
                 | ShiftRightLogical
             ) => {
-                self.exec_alu_op_r(
-                    &op.unwrap(), 
-                    instr,
-                );
-            },
-
-            op @ Some(
-                AddUpperImmediateProgramCounter
-                | LoadUpperImmediate
-            ) => {
-                self.exec_instr_u(
-                    &op.unwrap(),
-                    instr,
+                self.reg_x.write(
+                    instr.rd().unwrap(),
+                    self.alu.run(
+                        &op.unwrap(), 
+                        self.reg_x.read(
+                            instr.rs1().unwrap(),
+                        ) as i32,
+                        self.reg_x.read(
+                            instr.rs2().unwrap(),
+                        ) as i32,
+                    ) as u32,
                 );
             },
 
             _ => self.handle_illegal_instr(instr),
         }
     }
-    
-    fn exec_alu_op_b(&mut self, op: &Op, instr: &Instruction) {
-        if let 1 = self.alu.run(
-            op, 
-            self.reg_x.read(instr.rs1().unwrap()) as i32, 
-            self.reg_x.read(instr.rs2().unwrap()) as i32,
-        ) {
-            // TODO:
-            // The conditional branch instructions will generate an 
-            // instruction-address-misaligned exception if the
-            // target address is not aligned to a four-byte boundary
-            // and the branch condition evaluates to true. If the
-            // branch condition evaluates to false, the 
-            // instruction-address-misaligned exception will not be raised.
 
-            // NOTE:
-            // Instruction-address-misaligned exceptions are not possible
-            // on machines that support extensions with 16-bit aligned 
-            // instructions, such as the compressed instruction-set
-            // extension, C.
-
-            self.pc = self.pc.wrapping_add_signed(instr.imm().unwrap());
-        }
-    }
-    
-    fn exec_alu_op_r(&mut self, op: &Op, instr: &Instruction) {
-        self.reg_x.write(
-            instr.rd().unwrap(),
-            self.alu.run(
-                op, 
-                self.reg_x.read(instr.rs1().unwrap()) as i32,
-                self.reg_x.read(instr.rs2().unwrap()) as i32,
-            ) as u32
-        );
-    }
-    
-    fn exec_alu_op_i(&mut self, op: &Op, instr: &Instruction) {
-        self.reg_x.write(
-            instr.rd().unwrap(),
-            self.alu.run(
-                op, 
-                self.reg_x.read(instr.rs1().unwrap()) as i32,
-                instr.imm().unwrap(),
-            ) as u32
-        );
+    /// Executes an S-type instruction.
+    #[inline]
+    fn exec_instr_s(&mut self, instr: &Instruction) {
+        todo!("exec_instr_s not yet implemented.");
     }
 
     /// Executes a U-type instruction.
     #[inline]
-    fn exec_instr_u(&mut self, op: &Op, instr: &Instruction)
-    {
-        let mut addr: u32 = self.alu.run(
-            &ShiftLeftLogicalImmediate,
-            instr.imm().unwrap(),
-            12,
-        ) as u32;
+    fn exec_instr_u(&mut self, instr: &Instruction) {
+        match Decoder::decode(instr) {
+            op @ Some(
+                AddUpperImmediateProgramCounter
+                | LoadUpperImmediate
+            ) => {
+                let mut addr: u32 = self.alu.run(
+                    &ShiftLeftLogicalImmediate,
+                    instr.imm().unwrap(),
+                    12,
+                ) as u32;
+        
+                if let AddUpperImmediateProgramCounter = op.unwrap() {
+                    addr = self.alu.run(
+                        &ArithmeticAddImmediate,
+                        addr as i32,
+                        self.pc as i32,
+                    ) as u32;
+                }
+        
+                self.reg_x.write(
+                    instr.rd().unwrap(),
+                    addr,
+                );
+            },
 
-        if let &AddUpperImmediateProgramCounter = op {
-            addr = self.alu.run(
-                &ArithmeticAddImmediate,
-                addr as i32,
-                self.pc as i32,
-            ) as u32;
+            _ => self.handle_illegal_instr(instr),
         }
-
-        self.reg_x.write(
-            instr.rd().unwrap(),
-            addr,
-        );
     }
 
-    fn exec_jump(&mut self, op: &Op, instr: &Instruction) {
+    fn exec_jump(&mut self, op: Op, instr: &Instruction) {
         // Write the return address to the destination register.
         self.reg_x.write(
             instr.rd().unwrap(),
@@ -218,12 +267,20 @@ impl Processor {
                     instr.imm().unwrap(),
                 )
             },
+            
             // target = (rs1 + imm) & !1
             JumpAndLinkRegister => {
-                (self.reg_x.read(instr.rs1().unwrap())
-                    .wrapping_add_signed(instr.imm().unwrap()))
-                    & !0x01
+                (
+                    self.reg_x
+                        .read(
+                            instr.rs1().unwrap(),
+                        )
+                        .wrapping_add_signed(
+                            instr.imm().unwrap(),
+                        )
+                ) & !0x01
             },
+
             _ => self.pc
         };
     }
