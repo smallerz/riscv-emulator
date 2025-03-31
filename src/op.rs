@@ -4,6 +4,7 @@ use Op::*;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Op {
+    AddUpperImmediateProgramCounter,
     ArithmeticAdd,
     ArithmeticAddImmediate,
     ArithmeticSub,
@@ -58,6 +59,7 @@ impl Display for Op {
             f,
             "{}",
             match self {
+                AddUpperImmediateProgramCounter     => "auipc",
                 ArithmeticAdd                       => "add",
                 ArithmeticAddImmediate              => "addi",
                 ArithmeticSub                       => "sub",

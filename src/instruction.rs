@@ -49,14 +49,15 @@ impl Instruction {
     /// Returns the format of the instruction.
     pub fn format(&self) -> InstructionFormat {
         match self.opcode() {
-            0x03 | 0x0f | 0x13 | 0x17 | 0x67 | 0x73 => I,
+            0x03 | 0x0f | 0x13 | 0x67 | 0x73 => I,
             0x23 => S,
             0x33 => R,
-            0x37 => U,
+            0x17 | 0x37 => U,
             0x63 => B,
             0x6f => J,
             _ => todo!(
-                "Invalid instruction format handler not yet implemented"),
+                "Invalid instruction format handler not yet implemented"
+            ),
         }
     }
 

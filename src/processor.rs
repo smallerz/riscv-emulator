@@ -119,7 +119,15 @@ impl Processor {
                 );
             },
 
-            Some(LoadUpperImmediate) => self.exec_instr_lui(instr),
+            op @ Some(
+                AddUpperImmediateProgramCounter
+                | LoadUpperImmediate
+            ) => {
+                self.exec_instr_u(
+                    &op.unwrap(),
+                    instr,
+                );
+            },
 
             _ => self.handle_illegal_instr(instr),
         }
@@ -171,19 +179,28 @@ impl Processor {
         );
     }
 
-    /// Executes a `lui` instruction.
-    /// `lui` writes an immediate into the upper 20 bits 
-    /// of a destination register.
+    /// Executes a U-type instruction.
     #[inline]
-    fn exec_instr_lui(&mut self, instr: &Instruction) {
+    fn exec_instr_u(&mut self, op: &Op, instr: &Instruction)
+    {
+        let mut addr: u32 = self.alu.run(
+            &ShiftLeftLogicalImmediate,
+            instr.imm().unwrap(),
+            12,
+        ) as u32;
+
+        if let &AddUpperImmediateProgramCounter = op {
+            addr = self.alu.run(
+                &ArithmeticAddImmediate,
+                addr as i32,
+                self.pc as i32,
+            ) as u32;
+        }
+
         self.reg_x.write(
             instr.rd().unwrap(),
-            self.alu.run(
-                &Op::ShiftLeftLogicalImmediate,
-                instr.imm().unwrap(),
-                12,
-            ) as u32
-        )
+            addr,
+        );
     }
 
     fn exec_jump(&mut self, op: &Op, instr: &Instruction) {
