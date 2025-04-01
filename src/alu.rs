@@ -35,11 +35,17 @@ impl Alu {
                 (x as u32 >= y as u32) as i32
             },
 
-            BranchLessThan => {
+            BranchLessThan
+                | SetLessThan
+                | SetLessThanImmediate => 
+            {
                 (x < y) as i32
             },
 
-            BranchLessThanUnsigned => {
+            BranchLessThanUnsigned
+                | SetLessThanImmediateUnsigned
+                | SetLessThanUnsigned => 
+            {
                 ((x as u32) < y as u32) as i32
             },
 

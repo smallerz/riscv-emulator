@@ -136,6 +136,8 @@ impl Processor {
                 | LogicalAndImmediate
                 | LogicalExclusiveOrImmediate
                 | LogicalOrImmediate
+                | SetLessThanImmediate
+                | SetLessThanImmediateUnsigned
                 | ShiftLeftLogicalImmediate
                 | ShiftRightArithmeticImmediate
                 | ShiftRightLogicalImmediate
@@ -159,7 +161,7 @@ impl Processor {
                     op.unwrap(),
                     instr,
                 );
-            }, 
+            },
 
             _ => self.handle_illegal_instr(instr),
         }
@@ -192,6 +194,8 @@ impl Processor {
                 | LogicalAnd
                 | LogicalExclusiveOr
                 | LogicalOr
+                | SetLessThan
+                | SetLessThanUnsigned
                 | ShiftLeftLogical
                 | ShiftRightArithmetic
                 | ShiftRightLogical
