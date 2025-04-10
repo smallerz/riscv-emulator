@@ -15,7 +15,9 @@ impl Alu {
     /// Performs an ALU operation on operands `x` and `y`.
     pub fn run(&self, op: &Op, x: i32, y: i32) -> i32 {
         match op {
-            ArithmeticAdd | ArithmeticAddImmediate => {
+            ArithmeticAdd
+                | ArithmeticAddImmediate => 
+            {
                 x.wrapping_add(y)
             },
 
@@ -53,27 +55,39 @@ impl Alu {
                 (x != y) as i32
             },
 
-            LogicalAnd | LogicalAndImmediate => {
+            LogicalAnd
+                | LogicalAndImmediate =>
+            {
                 x & y
             },
 
-            LogicalOr | LogicalOrImmediate => {
+            LogicalOr
+                | LogicalOrImmediate =>
+            {
                 x | y
             },
 
-            LogicalExclusiveOr | LogicalExclusiveOrImmediate => {
+            LogicalExclusiveOr
+                | LogicalExclusiveOrImmediate =>
+            {
                 x ^ y
             },
 
-            ShiftLeftLogical | ShiftLeftLogicalImmediate => {
+            ShiftLeftLogical
+                | ShiftLeftLogicalImmediate =>
+            {
                 x.wrapping_shl(y as u32)
             },
 
-            ShiftRightArithmetic | ShiftRightArithmeticImmediate => {
+            ShiftRightArithmetic
+                | ShiftRightArithmeticImmediate =>
+            {
                 x.wrapping_shr(y as u32)
             },
 
-            ShiftRightLogical | ShiftRightLogicalImmediate => {
+            ShiftRightLogical
+                | ShiftRightLogicalImmediate =>
+            {
                 (x as u32).wrapping_shr(y as u32) as i32
             },
 

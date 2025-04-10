@@ -9,27 +9,67 @@ use InstructionFormat::*;
 #[derive(Debug, Eq, PartialEq)]
 pub enum InstructionFormat {
     /// ## B-type instruction format (Branch)
-    /// `opcode`, `imm[11|1:4]`, `funct3`, `rs1`, `rs2`, `imm[5:10|12]`
+    /// 
+    /// Contains the following fields:
+    /// 
+    /// - `opcode`
+    /// - `funct3`
+    /// - `rs1`
+    /// - `rs2`
+    /// - `imm`
     B,
     
     /// ## I-type instruction format (Immediate)
-    /// `opcode`, `rd`, `funct3`, `rs1`, `imm`
+    /// 
+    /// Contains the following fields:
+    /// 
+    /// - `opcode`
+    /// - `rd`
+    /// - `funct3`
+    /// - `rs1`
+    /// - `imm`
     I,
     
     /// ## J-type instruction format (Jump)
-    /// `opcode`, `rd`, `imm[12:19|11|1:10|20]`
+    /// 
+    /// Contains the following fields:
+    /// 
+    /// - `opcode`
+    /// - `rd`
+    /// - `imm`
     J,
 
     /// ## R-type instruction format (Register)
-    /// `opcode`, `rd`, `funct3`, `rs1`, `rs2`, `funct7`
+    /// 
+    /// Contains the following fields:
+    /// 
+    /// - `opcode`
+    /// - `rd`
+    /// - `funct3`
+    /// - `rs1`
+    /// - `rs2`
+    /// - `funct7`
     R,
     
     /// ## S-type instruction format (Store)
-    /// `opcode`, `imm[0:4]`, `funct3`, `rs1`, `rs2`, `imm[5:11]`
+    /// 
+    /// Contains the following fields:
+    /// 
+    /// - `opcode`
+    /// - `funct3`
+    /// - `rs1`
+    /// - `rs2`
+    /// - `imm`
+
     S,
 
     /// ## U-type instruction format (Upper-Immediate)
-    /// `opcode`, `rd`, `imm[20]`
+    /// 
+    /// Contains the following fields:
+    /// 
+    /// - `opcode`
+    /// - `rd`
+    /// - `imm`
     U,
 }
 
@@ -75,7 +115,9 @@ impl Instruction {
     /// or None if the instruction doesn't have an rd field.
     pub fn rd(&self) -> Option<usize> {
         match self.format() {
-            I | J | R | U => Some((self.instr >> 7 & 0x1f) as usize),
+            I | J | R | U => {
+                Some((self.instr >> 7 & 0x1f) as usize)
+            },
             _ => None,
         }
     }
@@ -84,7 +126,9 @@ impl Instruction {
     /// or None if the instruction doesn't have an funct3 field.
     pub fn funct3(&self) -> Option<u8> {
         match self.format() {
-            B | I | R | S => Some((self.instr >> 12 & 0x07) as u8),
+            B | I | R | S => {
+                Some((self.instr >> 12 & 0x07) as u8)
+            },
             _ => None,
         }
     }
@@ -93,7 +137,9 @@ impl Instruction {
     /// or None if the instruction doesn't have an funct7 field.
     pub fn funct7(&self) -> Option<u8> {
         match self.format() {
-            R => Some((self.instr >> 25 & 0x7f) as u8),
+            R => {
+                Some((self.instr >> 25 & 0x7f) as u8)
+            },
             _ => None,
         }
     }
@@ -102,7 +148,9 @@ impl Instruction {
     /// or None if the instruction doesn't have an rs1 field.
     pub fn rs1(&self) -> Option<usize> {
         match self.format() {
-            B | I | R | S => Some((self.instr >> 15 & 0x1f) as usize),
+            B | I | R | S => {
+                Some((self.instr >> 15 & 0x1f) as usize)
+            },
             _ => None,
         }
     }
@@ -111,7 +159,9 @@ impl Instruction {
     /// or None if the instruction doesn't have an rs2 field.
     pub fn rs2(&self) -> Option<usize> {
         match self.format() {
-            B | R | S => Some((self.instr >> 20 & 0x1f) as usize),
+            B | R | S => {
+                Some((self.instr >> 20 & 0x1f) as usize)
+            },
             _ => None,
         }
     }
@@ -193,7 +243,11 @@ impl Instruction {
 }
 
 impl Display for Instruction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self, 
+        f: &mut std::fmt::Formatter<'_>
+    ) -> std::fmt::Result
+    {
         write!(
             f,
             "{}",
@@ -251,7 +305,7 @@ impl Display for Instruction {
 
                 S => format!(
                     // mnemonic rs2, imm(rs1)
-                    "{:<12} x{}, {:#010x}(x{})",
+                    "{:<12} x{}, {}(x{})",
                     self.mnemonic(),
                     self.rs2().unwrap(),
                     self.imm().unwrap(),
@@ -290,48 +344,76 @@ mod tests {
 
         #[test]
         fn has_b_format() {
-            assert_eq!(Instruction::new(B_INSTR).format(), B);
+            assert_eq!(
+                Instruction::new(B_INSTR).format(),
+                B,
+            );
         }
     
         #[test]
         fn has_valid_opcode() {
-            assert_eq!(Instruction::new(B_INSTR).opcode(), 0x63);
+            assert_eq!(
+                Instruction::new(B_INSTR).opcode(),
+                0x63,
+            );
         }
     
         #[test]
         fn has_no_rd() {
-            assert_eq!(Instruction::new(B_INSTR).rd(), None);
+            assert_eq!(
+                Instruction::new(B_INSTR).rd(),
+                None,
+            );
         }
     
         #[test]
         fn has_funct3() {
-            assert_eq!(Instruction::new(B_INSTR).funct3(), Some(0x01));
+            assert_eq!(
+                Instruction::new(B_INSTR).funct3(),
+                Some(0x01),
+            );
         }
     
         #[test]
         fn has_rs1() {
-            assert_eq!(Instruction::new(B_INSTR).rs1(), Some(0x09));
+            assert_eq!(
+                Instruction::new(B_INSTR).rs1(),
+                Some(0x09),
+            );
         }
     
         #[test]
         fn has_rs2() {
-            assert_eq!(Instruction::new(B_INSTR).rs2(), Some(0x0b));
+            assert_eq!(
+                Instruction::new(B_INSTR).rs2(),
+                Some(0x0b),
+            );
         }
     
         #[test]
         fn has_no_funct7() {
-            assert_eq!(Instruction::new(B_INSTR).funct7(), None);
+            assert_eq!(
+                Instruction::new(B_INSTR).funct7(),
+                None,
+            );
         }
         
         #[test]
         fn has_imm() {
-            assert_eq!(Instruction::new(B_INSTR).imm(), Some(0x14));
+            assert_eq!(
+                Instruction::new(B_INSTR).imm(),
+                Some(0x14),
+            );
         }
     
         #[test]
         fn sign_extends_imm() {
             let imm = Instruction::new(0xfe529ae3).imm().unwrap();
-            assert_eq!(imm.is_negative(), true);
+
+            assert_eq!(
+                imm.is_negative(),
+                true,
+            );
         }
     }
 
@@ -348,42 +430,65 @@ mod tests {
         
             #[test]
             fn has_i_format() {
-                assert_eq!(Instruction::new(I_INSTR).format(), I);
+                assert_eq!(
+                    Instruction::new(I_INSTR).format(),
+                    I,
+                );
             }
         
             #[test]
             fn has_valid_opcode() {
-                assert_eq!(Instruction::new(I_INSTR).opcode(), 0x13);
+                assert_eq!(
+                    Instruction::new(I_INSTR).opcode(),
+                    0x13,
+                );
             }
         
             #[test]
             fn has_rd() {
-                assert_eq!(Instruction::new(I_INSTR).rd(), Some(0x0a));
+                assert_eq!(
+                    Instruction::new(I_INSTR).rd(),
+                    Some(0x0a),
+                );
             }
         
             #[test]
             fn has_funct3() {
-                assert_eq!(Instruction::new(I_INSTR).funct3(), Some(0x00));
+                assert_eq!(
+                    Instruction::new(I_INSTR).funct3(),
+                    Some(0x00),
+                );
             }
         
             #[test]
             fn has_rs1() {
-                assert_eq!(Instruction::new(I_INSTR).rs1(), Some(0x0b));
+                assert_eq!(
+                    Instruction::new(I_INSTR).rs1(),
+                    Some(0x0b),
+                );
             }
         
             #[test]
             fn has_no_rs2() {
-                assert_eq!(Instruction::new(I_INSTR).rs2(), None);
+                assert_eq!(
+                    Instruction::new(I_INSTR).rs2(),
+                    None,
+                );
             }
         
             #[test]
             fn has_no_funct7() {
-                assert_eq!(Instruction::new(I_INSTR).funct7(), None);
+                assert_eq!(
+                    Instruction::new(I_INSTR).funct7(),
+                    None,
+                );
             }
             
             #[test]
             fn has_imm() {
-                assert_eq!(Instruction::new(I_INSTR).imm(), Some(-12));
+                assert_eq!(
+                    Instruction::new(I_INSTR).imm(),
+                    Some(-12));
             }
         
             #[test]
@@ -393,7 +498,10 @@ mod tests {
         
                 let imm = Instruction::new(instr).imm().unwrap();
         
-                assert_eq!(imm.is_negative(), true);
+                assert_eq!(
+                    imm.is_negative(),
+                    true,
+                );
             }
     }
 
@@ -408,42 +516,66 @@ mod tests {
 
             #[test]
             fn has_j_format() {
-                assert_eq!(Instruction::new(J_INSTR).format(), J);
+                assert_eq!(
+                    Instruction::new(J_INSTR).format(),
+                    J,
+                );
             }
         
             #[test]
             fn has_valid_opcode() {
-                assert_eq!(Instruction::new(J_INSTR).opcode(), 0x6f);
+                assert_eq!(
+                    Instruction::new(J_INSTR).opcode(),
+                    0x6f,
+                );
             }
         
             #[test]
             fn has_rd() {
-                assert_eq!(Instruction::new(J_INSTR).rd(), Some(0x00));
+                assert_eq!(
+                    Instruction::new(J_INSTR).rd(),
+                    Some(0x00),
+                );
             }
         
             #[test]
             fn has_no_funct3() {
-                assert_eq!(Instruction::new(J_INSTR).funct3(), None);
+                assert_eq!(
+                    Instruction::new(J_INSTR).funct3(),
+                    None,
+                );
             }
         
             #[test]
             fn has_no_rs1() {
-                assert_eq!(Instruction::new(J_INSTR).rs1(), None);
+                assert_eq!(
+                    Instruction::new(J_INSTR).rs1(),
+                    None,
+                );
             }
         
             #[test]
             fn has_no_rs2() {
-                assert_eq!(Instruction::new(J_INSTR).rs2(), None);
+                assert_eq!(
+                    Instruction::new(J_INSTR).rs2(),
+                    None,
+                );
             }
         
             #[test]
             fn has_no_funct7() {
-                assert_eq!(Instruction::new(J_INSTR).funct7(), None);
+                assert_eq!(
+                    Instruction::new(J_INSTR).funct7(),
+                    None,
+                );
             }
             
             #[test]
             fn has_imm() {
-                assert_eq!(Instruction::new(J_INSTR).imm(), Some(0x40));
+                assert_eq!(
+                    Instruction::new(J_INSTR).imm(),
+                    Some(0x40),
+                );
             }
         
             #[test]
@@ -453,7 +585,10 @@ mod tests {
         
                 let imm = Instruction::new(instr).imm().unwrap();
         
-                assert_eq!(imm.is_negative(), true);
+                assert_eq!(
+                    imm.is_negative(),
+                    true,
+                );
             }
     }
 
@@ -471,42 +606,66 @@ mod tests {
 
             #[test]
             fn has_r_format() {
-                assert_eq!(Instruction::new(R_INSTR).format(), R);
+                assert_eq!(
+                    Instruction::new(R_INSTR).format(),
+                    R,
+                );
             }
         
             #[test]
             fn has_valid_opcode() {
-                assert_eq!(Instruction::new(R_INSTR).opcode(), 0x33);
+                assert_eq!(
+                    Instruction::new(R_INSTR).opcode(),
+                    0x33,
+                );
             }
         
             #[test]
             fn has_rd() {
-                assert_eq!(Instruction::new(R_INSTR).rd(), Some(0x05));
+                assert_eq!(
+                    Instruction::new(R_INSTR).rd(),
+                    Some(0x05),
+                );
             }
         
             #[test]
             fn has_funct3() {
-                assert_eq!(Instruction::new(R_INSTR).funct3(), Some(0x00));
+                assert_eq!(
+                    Instruction::new(R_INSTR).funct3(),
+                    Some(0x00),
+                );
             }
         
             #[test]
             fn has_rs1() {
-                assert_eq!(Instruction::new(R_INSTR).rs1(), Some(0x07));
+                assert_eq!(
+                    Instruction::new(R_INSTR).rs1(),
+                    Some(0x07),
+                );
             }
         
             #[test]
             fn has_rs2() {
-                assert_eq!(Instruction::new(R_INSTR).rs2(), Some(0x03));
+                assert_eq!(
+                    Instruction::new(R_INSTR).rs2(),
+                    Some(0x03),
+                );
             }
         
             #[test]
             fn has_funct7() {
-                assert_eq!(Instruction::new(R_INSTR).funct7(), Some(0x20));
+                assert_eq!(
+                    Instruction::new(R_INSTR).funct7(),
+                    Some(0x20),
+                );
             }
             
             #[test]
             fn has_no_imm() {
-                assert_eq!(Instruction::new(R_INSTR).imm(), None);
+                assert_eq!(
+                    Instruction::new(R_INSTR).imm(),
+                    None,
+                );
             }
     }
 
@@ -523,42 +682,66 @@ mod tests {
 
         #[test]
         fn has_s_format() {
-            assert_eq!(Instruction::new(S_INSTR).format(), S);
+            assert_eq!(
+                Instruction::new(S_INSTR).format(),
+                S,
+            );
         }
     
         #[test]
         fn has_valid_opcode() {
-            assert_eq!(Instruction::new(S_INSTR).opcode(), 0x23);
+            assert_eq!(
+                Instruction::new(S_INSTR).opcode(),
+                0x23,
+            );
         }
     
         #[test]
         fn has_no_rd() {
-            assert_eq!(Instruction::new(S_INSTR).rd(), None);
+            assert_eq!(
+                Instruction::new(S_INSTR).rd(),
+                None,
+            );
         }
     
         #[test]
         fn has_funct3() {
-            assert_eq!(Instruction::new(S_INSTR).funct3(), Some(0x02));
+            assert_eq!(
+                Instruction::new(S_INSTR).funct3(),
+                Some(0x02),
+            );
         }
     
         #[test]
         fn has_rs1() {
-            assert_eq!(Instruction::new(S_INSTR).rs1(), Some(0x0c));
+            assert_eq!(
+                Instruction::new(S_INSTR).rs1(),
+                Some(0x0c),
+            );
         }
     
         #[test]
         fn has_rs2() {
-            assert_eq!(Instruction::new(S_INSTR).rs2(), Some(0x06));
+            assert_eq!(
+                Instruction::new(S_INSTR).rs2(),
+                Some(0x06),
+            );
         }
     
         #[test]
         fn has_no_funct7() {
-            assert_eq!(Instruction::new(S_INSTR).funct7(), None);
+            assert_eq!(
+                Instruction::new(S_INSTR).funct7(),
+                None,
+            );
         }
         
         #[test]
         fn has_imm() {
-            assert_eq!(Instruction::new(S_INSTR).imm(), Some(0x04));
+            assert_eq!(
+                Instruction::new(S_INSTR).imm(),
+                Some(0x04),
+            );
         }
     
         #[test]
@@ -567,7 +750,11 @@ mod tests {
             let instr = 0xffd29223;
     
             let imm = Instruction::new(instr).imm().unwrap();
-            assert_eq!(imm.is_negative(), true);
+
+            assert_eq!(
+                imm.is_negative(),
+                true,
+            );
         }
     }
 
@@ -582,48 +769,76 @@ mod tests {
     
         #[test]
         fn has_u_format() {
-            assert_eq!(Instruction::new(U_INSTR).format(), U);
+            assert_eq!(
+                Instruction::new(U_INSTR).format(),
+                U,
+            );
         }
     
         #[test]
         fn has_valid_opcode() {
-            assert_eq!(Instruction::new(U_INSTR).opcode(), 0x37);
+            assert_eq!(
+                Instruction::new(U_INSTR).opcode(),
+                0x37,
+            );
         }
     
         #[test]
         fn has_rd() {
-            assert_eq!(Instruction::new(U_INSTR).rd(), Some(0x0a));
+            assert_eq!(
+                Instruction::new(U_INSTR).rd(),
+                Some(0x0a),
+            );
         }
     
         #[test]
         fn has_no_funct3() {
-            assert_eq!(Instruction::new(U_INSTR).funct3(), None);
+            assert_eq!(
+                Instruction::new(U_INSTR).funct3(),
+                None,
+            );
         }
     
         #[test]
         fn has_no_rs1() {
-            assert_eq!(Instruction::new(U_INSTR).rs1(), None);
+            assert_eq!(
+                Instruction::new(U_INSTR).rs1(),
+                None,
+            );
         }
     
         #[test]
         fn has_no_rs2() {
-            assert_eq!(Instruction::new(U_INSTR).rs2(), None);
+            assert_eq!(
+                Instruction::new(U_INSTR).rs2(),
+                None,
+            );
         }
     
         #[test]
         fn has_no_funct7() {
-            assert_eq!(Instruction::new(U_INSTR).funct7(), None);
+            assert_eq!(
+                Instruction::new(U_INSTR).funct7(),
+                None,
+            );
         }
         
         #[test]
         fn has_imm() {
-            assert_eq!(Instruction::new(U_INSTR).imm(), Some(-1));
+            assert_eq!(
+                Instruction::new(U_INSTR).imm(),
+                Some(-1),
+            );
         }
     
         #[test]
         fn sign_extends_imm() {
             let imm = Instruction::new(U_INSTR).imm().unwrap();
-            assert_eq!(imm.is_negative(), true);
+
+            assert_eq!(
+                imm.is_negative(),
+                true,
+            );
         }
     }
 }
